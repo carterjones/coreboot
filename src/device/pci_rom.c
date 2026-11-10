@@ -336,7 +336,17 @@ void pci_rom_ssdt(const struct device *device)
 
 	const char *scope = acpi_device_path(device);
 	if (!scope) {
-		printk(BIOS_ERR, "%s: Missing ACPI scope\n", dev_path(device));
+		/*
+		 * A device on a domain's root bus is built in and should have a node in the
+		 * DSDT. A display device behind a bridge (a plug-in card, possibly behind its
+		 * own PCIe switch) normally has none; it simply gets no _ROM method, and its
+		 * driver finds the VBIOS elsewhere (VFCT, the ROM BAR).
+		 */
+		const bool on_root_bus = device->upstream && device->upstream->dev &&
+					 device->upstream->dev->path.type == DEVICE_PATH_DOMAIN;
+		printk(on_root_bus ? BIOS_ERR : BIOS_DEBUG, "%s: %s, no _ROM written\n",
+		       dev_path(device),
+		       on_root_bus ? "Missing ACPI scope" : "no ACPI node behind its bridge");
 		return;
 	}
 
