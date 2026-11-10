@@ -42,6 +42,13 @@ chip soc/intel/meteorlake
 	register "usb3_ports[7]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 8, hotplug
 	register "usb3_ports[8]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 9, hotplug
 
+	# Two Thunderbolt 4 / USB4 Type-C ports. The overcurrent pins, the AUX orientation and the
+	# mapping of these two ports to the TCSS port numbers are not known yet.
+	register "tcss_ports[0]" = "TCSS_PORT_DEFAULT(OC_SKIP)"
+	register "tcss_ports[1]" = "TCSS_PORT_DEFAULT(OC_SKIP)"
+	register "tcss_ports[2]" = "TCSS_PORT_EMPTY"
+	register "tcss_ports[3]" = "TCSS_PORT_EMPTY"
+
 	device domain 0 on
 		device ref system_agent on end
 		device ref igpu on end
@@ -63,6 +70,27 @@ chip soc/intel/meteorlake
 			end
 		end
 
+		# The running board has TBT root ports 0 and 1, the TCSS xHCI with two USB3 root
+		# ports, and DMA0. DMA1 and root ports 2 and 3 are absent.
+		device ref tbt_pcie_rp0 on end
+		device ref tbt_pcie_rp1 on end
+		device ref tcss_xhci on
+			chip drivers/usb/acpi
+				device ref tcss_root_hub on
+					chip drivers/usb/acpi
+						register "desc" = ""USB4 Type-C Port 1""
+						register "type" = "UPC_TYPE_C_USB2_SS_SWITCH"
+						device ref tcss_usb3_port0 on end
+					end
+					chip drivers/usb/acpi
+						register "desc" = ""USB4 Type-C Port 2""
+						register "type" = "UPC_TYPE_C_USB2_SS_SWITCH"
+						device ref tcss_usb3_port1 on end
+					end
+				end
+			end
+		end
+		device ref tcss_dma0 on end
 		# Crash log: the SoC PMC's records are read through this SRAM's BAR.
 		device ref soc_shared_sram on end
 

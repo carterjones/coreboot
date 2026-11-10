@@ -19,6 +19,7 @@ DefinitionBlock(
 	Device (\_SB.PCI0) {
 		#include <soc/intel/meteorlake/acpi/northbridge_arl_s.asl>
 		#include <soc/intel/meteorlake/acpi/southbridge_arl_s.asl>
+		#include <soc/intel/meteorlake/acpi/tcss.asl>
 	}
 
 	Device (\_SB.PCI1) {
