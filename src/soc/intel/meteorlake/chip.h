@@ -215,6 +215,9 @@ struct soc_intel_meteorlake_config {
 		SAGV_POINTS_0_1_2_3 = 0x0f,
 	} sagv_wp_bitmap;
 
+	/* Upper limit for the DRAM speed in MT/s (FSP-M DdrFreqLimit); 0 leaves it to FSP. */
+	uint16_t max_dram_speed_mts;
+
 	/* Rank Margin Tool. */
 	bool rmt;
 

@@ -154,6 +154,9 @@ static void fill_fspm_mrc_params(FSP_M_CONFIG *m_cfg,
 {
 	unsigned int i;
 
+	if (config->max_dram_speed_mts)
+		m_cfg->DdrFreqLimit = config->max_dram_speed_mts;
+
 	m_cfg->SaGv = config->sagv;
 
 	if (m_cfg->SaGv) {
