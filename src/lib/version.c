@@ -29,7 +29,8 @@ const char coreboot_compile_time[] = COREBOOT_COMPILE_TIME;
 const char coreboot_dmi_date[] = COREBOOT_DMI_DATE;
 
 const struct bcd_date coreboot_build_date = {
-	.century = 0x20,
+	/* Two-digit years 70-99 are 19xx: a BUILD_TIMELESS date (1970) is not 2070. */
+	.century = COREBOOT_BUILD_YEAR_BCD >= 0x70 ? 0x19 : 0x20,
 	.year = COREBOOT_BUILD_YEAR_BCD,
 	.month = COREBOOT_BUILD_MONTH_BCD,
 	.day = COREBOOT_BUILD_DAY_BCD,
