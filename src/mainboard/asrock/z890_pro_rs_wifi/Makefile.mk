@@ -6,3 +6,6 @@ bootblock-y += gpio.c
 romstage-y += romstage_fsp_params.c
 
 ramstage-y += mainboard.c
+
+all-y += die.c
+smm-y += die.c
