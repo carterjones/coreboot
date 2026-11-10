@@ -146,6 +146,7 @@ config SOC_INTEL_ARROWLAKE_S
 	bool
 	select FSP_TYPE_IOT
 	select SOC_INTEL_COMMON_BLOCK_PCR_VIRTUAL_PIDS
+	select SOC_INTEL_COMMON_BLOCK_SMM_LOCK_GPIO_PADS
 	select SOC_INTEL_METEORLAKE
 	help
 	  Choose this option if your mainboard has an ARL-S desktop SoC,

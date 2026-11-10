@@ -15,4 +15,14 @@
 	MISCCFG_GPRCOMPCDLCGEN | MISCCFG_GPRTCDLCGEN | MISCCFG_GSXSLCGEN \
 	| MISCCFG_GPDPCGEN | MISCCFG_GPDLCGEN)
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S) && !defined(__ACPI__)
+#include <stddef.h>
+/*
+ * Pads that the SMI handler locks at the end of ramstage. The board lists them; the default is
+ * none. The chipset's pads are reached through its P2SB, which the sideband helper unhides in
+ * SMM.
+ */
+const struct gpio_lock_config *mainboard_gpio_lock_config(size_t *num);
+#endif
+
 #endif

@@ -3,6 +3,10 @@
 #ifndef _SOC_METEORLAKE_GPIO_DEFS_H_
 #define _SOC_METEORLAKE_GPIO_DEFS_H_
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+#include <soc/gpio_defs_arl_s.h>
+#else
+
 #include <soc/gpio_soc_defs.h>
 
 #define GPIO_NUM_PAD_CFG_REGS	4 /* DW0, DW1, DW2, DW3 */
@@ -261,5 +265,7 @@
 #define GPI_NMI_STS_0				0x2b0
 #define GPI_NMI_EN_0				0x2d0
 #define PAD_CFG_BASE				0x600
+
+#endif /* SOC_INTEL_ARROWLAKE_S */
 
 #endif

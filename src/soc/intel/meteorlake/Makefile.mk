@@ -6,7 +6,11 @@ subdirs-y += ../../../cpu/intel/microcode
 subdirs-y += ../../../cpu/intel/turbo
 
 # all (bootblock, verstage, romstage, postcar, ramstage)
+ifeq ($(CONFIG_SOC_INTEL_ARROWLAKE_S),y)
+all-y += gpio_arl_s.c
+else
 all-y += gpio.c
+endif
 
 bootblock-y += bootblock/bootblock.c
 bootblock-y += bootblock/ioe_die.c
@@ -38,7 +42,11 @@ ramstage-y += xhci.c
 ramstage-y += soc_info.c
 
 smm-y += elog.c
+ifeq ($(CONFIG_SOC_INTEL_ARROWLAKE_S),y)
+smm-y += gpio_arl_s.c
+else
 smm-y += gpio.c
+endif
 smm-y += p2sb.c
 smm-y += soc_info.c
 smm-y += xhci.c

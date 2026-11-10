@@ -2,6 +2,10 @@
 #ifndef _SOC_METEORLAKE_GPIO_SOC_DEFS_H_
 #define _SOC_METEORLAKE_GPIO_SOC_DEFS_H_
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+#include <soc/gpio_soc_defs_arl_s.h>
+#else
+
 #include <intelblocks/gpio_macros.h>
 
 /*
@@ -511,5 +515,7 @@
 
 #define TOTAL_GPIO_COMM		(COMM_5 + 1)
 #define TOTAL_PADS		(GPIO_COM5_END + 1)
+
+#endif /* SOC_INTEL_ARROWLAKE_S */
 
 #endif
