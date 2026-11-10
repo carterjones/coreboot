@@ -29,6 +29,104 @@ chip soc/intel/meteorlake
 		device ref soc_espi on
 			# NCT6686D.
 			chip superio/nuvoton/nct6687d
+				# Values are what the vendor firmware leaves in the EC after PEI with the default
+				# setup: monitor slots, fan pin routing and the Smart Fan IV curves.
+				register "sensors[0]" = "PECI_AGENT0_DOMAIN0"
+				register "sensors[1]" = "THERMISTOR14"
+				register "sensors[2]" = "THERMISTOR15"
+				register "sensors[3]" = "THERMISTOR5"
+				register "sensors[4]" = "VIN16"
+				register "sensors[5]" = "VIN0"
+				register "sensors[6]" = "VIN1"
+				register "sensors[7]" = "VIN2"
+				register "sensors[8]" = "VIN3"
+				register "sensors[9]" = "VIN6"
+				register "sensors[10]" = "VIN7"
+				register "sensors[11]" = "VCC"
+				register "sensors[12]" = "VBAT"
+
+				register "fan_default_val" = "50"
+
+				# CPU_FAN1, inferred from the vendor Setup block order
+				register "FAN1.mode" = "FAN_SMART_FAN_IV"
+				register "FAN1.unit_sel" = "FAN_PWM"
+				register "FAN1.fanin_sel" = "TACH_PWM9"
+				register "FAN1.fanout_sel" = "TACH_PWM10"
+				register "FAN1.fan_alg_weight" = "10"
+				register "FAN1.smart_fan.temp_src" = "{ 1, 0, 0, 0 }"
+				register "FAN1.smart_fan.temp_levels" = "{ 40, 65, 70, 70, 115, 115, 115 }"
+				register "FAN1.smart_fan.speed_levels" = "{ 20, 70, 100, 100, 100, 100, 100 }"
+
+				# CHA_FAN3, inferred from the vendor Setup block order
+				register "FAN2.mode" = "FAN_SMART_FAN_IV"
+				register "FAN2.unit_sel" = "FAN_PWM"
+				register "FAN2.fanin_sel" = "TACH_PWM11"
+				register "FAN2.fanout_sel" = "TACH_PWM12"
+				register "FAN2.fan_alg_weight" = "10"
+				register "FAN2.smart_fan.temp_src" = "{ 2, 0, 0, 0 }"
+				register "FAN2.smart_fan.temp_levels" = "{ 40, 70, 70, 70, 115, 115, 115 }"
+				register "FAN2.smart_fan.speed_levels" = "{ 60, 100, 100, 100, 100, 100, 100 }"
+
+				# CPU_FAN2, inferred from the vendor Setup block order
+				register "FAN3.mode" = "FAN_SMART_FAN_IV"
+				register "FAN3.unit_sel" = "FAN_PWM"
+				register "FAN3.fanin_sel" = "TACH_PWM5"
+				register "FAN3.fanout_sel" = "TACH_PWM6"
+				register "FAN3.fan_alg_weight" = "10"
+				register "FAN3.smart_fan.temp_src" = "{ 1, 0, 0, 0 }"
+				register "FAN3.smart_fan.temp_levels" = "{ 40, 65, 70, 70, 115, 115, 115 }"
+				register "FAN3.smart_fan.speed_levels" = "{ 20, 70, 100, 100, 100, 100, 100 }"
+
+				# CHA_FAN1, inferred from the vendor Setup block order
+				register "FAN4.mode" = "FAN_SMART_FAN_IV"
+				register "FAN4.unit_sel" = "FAN_PWM"
+				register "FAN4.fanin_sel" = "TACH_PWM7"
+				register "FAN4.fanout_sel" = "TACH_PWM8"
+				register "FAN4.fan_alg_weight" = "10"
+				register "FAN4.smart_fan.temp_src" = "{ 2, 0, 0, 0 }"
+				register "FAN4.smart_fan.temp_levels" = "{ 40, 70, 70, 70, 115, 115, 115 }"
+				register "FAN4.smart_fan.speed_levels" = "{ 60, 100, 100, 100, 100, 100, 100 }"
+
+				# CHA_FAN2, inferred from the vendor Setup block order
+				register "FAN5.mode" = "FAN_SMART_FAN_IV"
+				register "FAN5.unit_sel" = "FAN_PWM"
+				register "FAN5.fanin_sel" = "TACH_PWM2"
+				register "FAN5.fanout_sel" = "TACH_PWM3"
+				register "FAN5.fan_alg_weight" = "10"
+				register "FAN5.smart_fan.temp_src" = "{ 2, 0, 0, 0 }"
+				register "FAN5.smart_fan.temp_levels" = "{ 40, 70, 70, 70, 115, 115, 115 }"
+				register "FAN5.smart_fan.speed_levels" = "{ 60, 100, 100, 100, 100, 100, 100 }"
+
+				# CHA_FAN4, inferred from the vendor Setup block order
+				register "FAN6.mode" = "FAN_SMART_FAN_IV"
+				register "FAN6.unit_sel" = "FAN_PWM"
+				register "FAN6.fanin_sel" = "TACH_PWM22"
+				register "FAN6.fanout_sel" = "TACH_PWM23"
+				register "FAN6.fan_alg_weight" = "10"
+				register "FAN6.smart_fan.temp_src" = "{ 2, 0, 0, 0 }"
+				register "FAN6.smart_fan.temp_levels" = "{ 40, 70, 70, 70, 115, 115, 115 }"
+				register "FAN6.smart_fan.speed_levels" = "{ 60, 100, 100, 100, 100, 100, 100 }"
+
+				# CHA_FAN5, inferred from the vendor Setup block order
+				register "FAN7.mode" = "FAN_SMART_FAN_IV"
+				register "FAN7.unit_sel" = "FAN_PWM"
+				register "FAN7.fanin_sel" = "TACH_PWM0"
+				register "FAN7.fanout_sel" = "TACH_PWM1"
+				register "FAN7.fan_alg_weight" = "10"
+				register "FAN7.smart_fan.temp_src" = "{ 2, 0, 0, 0 }"
+				register "FAN7.smart_fan.temp_levels" = "{ 40, 70, 70, 70, 115, 115, 115 }"
+				register "FAN7.smart_fan.speed_levels" = "{ 60, 100, 100, 100, 100, 100, 100 }"
+
+				# AIO_PUMP, inferred from the vendor Setup block order
+				register "FAN8.mode" = "FAN_SMART_FAN_IV"
+				register "FAN8.unit_sel" = "FAN_PWM"
+				register "FAN8.fanin_sel" = "TACH_PWM16"
+				register "FAN8.fanout_sel" = "TACH_PWM17"
+				register "FAN8.fan_alg_weight" = "10"
+				register "FAN8.smart_fan.temp_src" = "{ 1, 0, 0, 0 }"
+				register "FAN8.smart_fan.temp_levels" = "{ 0, 0, 0, 0, 0, 0, 0 }"
+				register "FAN8.smart_fan.speed_levels" = "{ 100, 100, 100, 100, 100, 100, 100 }"
+
 				# Every logical device is listed, with the state the vendor firmware leaves. An
 				# unlisted one would be enabled by the PNP code, which sets bit 0 of CR30, and on
 				# this chip CR30 is not an enable bit everywhere: on LDN 0x0d it is Deep S5 enable,
