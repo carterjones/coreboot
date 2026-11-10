@@ -23,6 +23,46 @@ chip soc/intel/meteorlake
 		# Crash log: the SoC PMC's records are read through this SRAM's BAR.
 		device ref soc_shared_sram on end
 
+		# The vendor firmware's ACPI puts the LPC bridge, the Super I/O and the EC under the
+		# SoC's root bridge, and both eSPI controllers decode the same ranges, so the Super I/O
+		# and the TPM hang off the SoC's controller here.
+		device ref soc_espi on
+			# NCT6686D.
+			chip superio/nuvoton/nct6687d
+				# Every logical device is listed, with the state the vendor firmware leaves. An
+				# unlisted one would be enabled by the PNP code, which sets bit 0 of CR30, and on
+				# this chip CR30 is not an enable bit everywhere: on LDN 0x0d it is Deep S5 enable,
+				# on 0x0c RTC enable, both battery-backed (NCT6686D datasheet 18.12, 18.13). "off"
+				# clears only bit 0, which the vendor leaves clear on those, so they keep the vendor
+				# values (0x0d: 0xa0).
+				device pnp 2e.1 off end		# parallel port
+				device pnp 2e.2 off end		# UART A
+				device pnp 2e.3 off end		# UART B, IR
+				device pnp 2e.5 on		# keyboard controller
+					io 0x60 = 0x60
+					io 0x62 = 0x64
+					irq 0x70 = 1
+					irq 0x72 = 12
+				end
+				device pnp 2e.6 off end		# CIR
+				device pnp 2e.7 off end		# GPIO0-7: CR30 is per-group host access, 0x00
+				device pnp 2e.8 on end		# PORT80 UART: no CR30, reads 0xff and is written back
+				device pnp 2e.9 off end		# GPIO8-9, alternate functions: CR30 0x00
+				# ACPI: the vendor leaves CR60/61 at 0 (reset value, LRESET#); no io line here
+				# so coreboot leaves them too, and lpc_open_pmio_window() is not asked to
+				# open a window at I/O 0 ("LPC IO decode base 0!").
+				device pnp 2e.a on
+					irq 0x70 = 0x40
+				end
+				device pnp 2e.b on		# EC space
+					io 0x60 = 0xa20
+				end
+				device pnp 2e.c off end		# RTC timer: CR30 is RTC configuration, 0x00
+				device pnp 2e.d off end		# Deep sleep, power fault: CR30 0xa0, Deep S5 off
+				device pnp 2e.e on end		# TACHIN/PWMOUT assignment: no CR30
+				device pnp 2e.f on end		# function registers: no CR30
+			end
+		end
 	end
 
 	device domain 1 on

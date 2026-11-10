@@ -1,6 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-/* Both NCT6687DD and NCT6687DF package variants are supported. */
+/*
+ * Both NCT6687DD and NCT6687DF package variants are supported.
+ *
+ * The NCT6686D (chip ID 0xd440, against 0xd590 for the NCT6687D) has the same logical devices
+ * and EC register access. The ASRock Z890 Pro RS WiFi uses one at config port 0x2e with the EC
+ * at 0xa20. Linux's nct6683 driver also treats the two chips alike. This driver does not read the
+ * chip ID, so it does not tell them apart.
+ */
 
 #ifndef SUPERIO_NUVOTON_NCT6687D_H
 #define SUPERIO_NUVOTON_NCT6687D_H

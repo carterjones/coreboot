@@ -26,5 +26,10 @@ DefinitionBlock(
 		#include <soc/intel/meteorlake/acpi/pch_arl_s.asl>
 	}
 
+	Scope (\_SB.PCI0.LPCB)
+	{
+		#include "acpi/superio.asl"
+	}
+
 	#include <southbridge/intel/common/acpi/sleepstates.asl>
 }
