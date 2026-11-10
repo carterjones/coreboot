@@ -478,6 +478,14 @@ config SKIP_SEND_CONNECT_TOPOLOGY_CMD
 	  Mainboards which use firmware connection manager may also wish to select this
 	  as needed.
 
+config SOC_INTEL_METEORLAKE_ROMSTAGE_POST_CODES
+	bool "Write POST codes between the romstage steps"
+	default n
+	help
+	  Write the codes 0x50 to 0x58 to the POST code port between the steps of romstage (CSE
+	  init, system agent, SMBus, thermal, FSP-M, DISB, DIMM info). A stall on a board whose only
+	  output is a POST code display then points at one step.
+
 config TME_KEY_REGENERATION_ON_WARM_BOOT
 	default y if INTEL_TME
 
