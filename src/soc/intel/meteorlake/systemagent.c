@@ -184,6 +184,16 @@ static void configure_tdp(struct device *dev)
 	}
 
 	if (!config_tdp) {
+		/*
+		 * Arrow Lake-S: FSP-S programs MSR_PKG_POWER_LIMIT itself from its own per-SKU
+		 * table when the PowerLimit UPDs are 0, so there is nothing for coreboot to
+		 * override.
+		 */
+		if (CONFIG(SOC_INTEL_ARROWLAKE_S)) {
+			printk(BIOS_INFO, "Power limits for SA PCI ID 0x%4x left as FSP set them\n",
+			       sa_pci_id);
+			return;
+		}
 		printk(BIOS_WARNING, "Skipped power limits configuration for SA PCI ID: 0x%4x\n",
 			sa_pci_id);
 		return;
