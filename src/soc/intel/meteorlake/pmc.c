@@ -102,7 +102,9 @@ static void soc_pmc_fill_ssdt(const struct device *dev)
 	acpigen_write_device(name);
 
 	acpigen_write_name_string("_HID", PMC_HID);
-	acpigen_write_name_string("_DDN", "Intel(R) Meteor Lake IPC Controller");
+	acpigen_write_name_string("_DDN", CONFIG(SOC_INTEL_ARROWLAKE_S) ?
+				  "Intel(R) Arrow Lake IPC Controller" :
+				  "Intel(R) Meteor Lake IPC Controller");
 	/* Hide the device so that Windows does not complain on missing driver */
 	acpigen_write_STA(ACPI_STATUS_DEVICE_HIDDEN_ON);
 

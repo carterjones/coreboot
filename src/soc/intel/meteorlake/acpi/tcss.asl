@@ -316,7 +316,11 @@ Scope (\_SB.PCI0)
 	Device (IOM)
 	{
 		Name (_HID, "INTC107A")
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+		Name (_DDN, "Intel(R) Arrow Lake Input Output Manager(IOM) driver")
+#else
 		Name (_DDN, "Intel(R) Meteor Lake Input Output Manager(IOM) driver")
+#endif
 		/* IOM preserved MMIO range from 0x3fff0aa0000 to 0x3fff0aa15ff. */
 		Name (_CRS, ResourceTemplate () {
 		QWordMemory (ResourceProducer, PosDecode, MinFixed, MaxFixed,

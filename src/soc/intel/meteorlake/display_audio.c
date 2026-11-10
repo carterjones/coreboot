@@ -101,7 +101,9 @@ static const u32 display_audio_verbs[] = {
 
 static struct azalia_codec platform_codecs[] = {
 	{
-		.name         = "Intel MeteorLake Display Audio (HDMI/DP)",
+		.name         = CONFIG(SOC_INTEL_ARROWLAKE_S) ?
+				"Intel ArrowLake Display Audio (HDMI/DP)" :
+				"Intel MeteorLake Display Audio (HDMI/DP)",
 		.vendor_id    = 0x8086281d,
 		.subsystem_id = 0x80860101,
 		.address      = 2,
