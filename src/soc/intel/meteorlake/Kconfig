@@ -190,6 +190,13 @@ config DCACHE_RAM_SIZE
 	  The size of the cache-as-ram region required during bootblock
 	  and/or romstage.
 
+# PCH_DEV_SMBUS is the chipset's SMBus (bus 0x80), which can only be reached inside the chipset's
+# I/O window (0x2000-0x8fff, set up by bootblock_pch_early_init()). The common 0xefa0 is outside
+# it, so the SPD reads in romstage found no DIMMs. 0x8d00 is the vendor's base, which the
+# bootblock already programs.
+config FIXED_SMBUS_IO_BASE
+	default 0x8d00 if SOC_INTEL_ARROWLAKE_S
+
 config DCACHE_BSP_STACK_SIZE
 	hex
 	default 0x88000
