@@ -16,6 +16,32 @@ chip soc/intel/meteorlake
 	}"
 
 
+	# USB2 ports 1 to 14 and USB3 ports 1 to 9 of the chipset xHCI. The overcurrent pins and the
+	# PHY tuning are not known, so every port uses the medium-length defaults with no overcurrent pin.
+	register "usb2_ports[0]" = "USB2_PORT_MID(OC_SKIP)" # port 1, hotplug
+	register "usb2_ports[1]" = "USB2_PORT_MID(OC_SKIP)" # port 2, hardwired
+	register "usb2_ports[2]" = "USB2_PORT_MID(OC_SKIP)" # port 3, hotplug
+	register "usb2_ports[3]" = "USB2_PORT_MID(OC_SKIP)" # port 4, hotplug
+	register "usb2_ports[4]" = "USB2_PORT_MID(OC_SKIP)" # port 5, hotplug
+	register "usb2_ports[5]" = "USB2_PORT_MID(OC_SKIP)" # port 6, hotplug
+	register "usb2_ports[6]" = "USB2_PORT_MID(OC_SKIP)" # port 7, hotplug
+	register "usb2_ports[7]" = "USB2_PORT_MID(OC_SKIP)" # port 8, hotplug
+	register "usb2_ports[8]" = "USB2_PORT_MID(OC_SKIP)" # port 9, hotplug
+	register "usb2_ports[9]" = "USB2_PORT_MID(OC_SKIP)" # port 10, hardwired
+	register "usb2_ports[10]" = "USB2_PORT_MID(OC_SKIP)" # port 11, hotplug
+	register "usb2_ports[11]" = "USB2_PORT_MID(OC_SKIP)" # port 12, hotplug
+	register "usb2_ports[12]" = "USB2_PORT_MID(OC_SKIP)" # port 13, marked unused by ACPI, but an ASRock LED controller is attached
+	register "usb2_ports[13]" = "USB2_PORT_MID(OC_SKIP)" # port 14, hardwired
+	register "usb3_ports[0]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 1, hotplug
+	register "usb3_ports[1]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 2, hotplug
+	register "usb3_ports[2]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 3, hotplug
+	register "usb3_ports[3]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 4, hotplug
+	register "usb3_ports[4]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 5, hotplug
+	register "usb3_ports[5]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 6, hotplug
+	register "usb3_ports[6]" = "USB3_PORT_EMPTY" # port 7, marked unused by ACPI
+	register "usb3_ports[7]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 8, hotplug
+	register "usb3_ports[8]" = "USB3_PORT_DEFAULT(OC_SKIP)" # port 9, hotplug
+
 	device domain 0 on
 		device ref system_agent on end
 		device ref igpu on end
@@ -184,6 +210,100 @@ chip soc/intel/meteorlake
 		# at 0xb8000000 do not reach the cards.
 		device ref pcie_rp1 on end
 		device ref pcie_rp4 on end
+		device ref xhci on
+			chip drivers/usb/acpi
+				device ref xhci_root_hub on
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port1 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_INTERNAL"
+						device ref usb2_port2 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port3 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port4 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port5 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port6 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port7 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port8 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port9 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_INTERNAL"
+						device ref usb2_port10 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port11 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_A"
+						device ref usb2_port12 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_INTERNAL"
+						device ref usb2_port13 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_INTERNAL"
+						device ref usb2_port14 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_USB3_A"
+						device ref usb3_port1 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_USB3_A"
+						device ref usb3_port2 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_USB3_A"
+						device ref usb3_port3 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_USB3_A"
+						device ref usb3_port4 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_USB3_A"
+						device ref usb3_port5 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_USB3_A"
+						device ref usb3_port6 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_USB3_A"
+						device ref usb3_port8 on end
+					end
+					chip drivers/usb/acpi
+						register "type" = "UPC_TYPE_USB3_A"
+						device ref usb3_port9 on end
+					end
+				end
+			end
+		end
 		device ref pch_espi on
 			register "gen1_dec" = "LPC_IO(0xa00, 0x40)"
 		end
