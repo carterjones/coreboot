@@ -168,4 +168,12 @@ void mainboard_memory_init_params(FSPM_UPD *memupd)
 	memcfg_init(memupd, &ddr5_mem_config, &dimm_module_spd_info, false);
 
 	pmics_setup();
+
+	/*
+	 * The iGPU is the primary display, for the payload's framebuffer on the board's HDMI.
+	 * On Auto (the default, 3) a card in PCIE1 becomes primary and FSP-S's GOP leaves the
+	 * iGPU dark: no graphics hand-off block. System76's dGPU boards do the same
+	 * (src/mainboard/system76/adl).
+	 */
+	memupd->FspmConfig.PrimaryDisplay = 0;
 }

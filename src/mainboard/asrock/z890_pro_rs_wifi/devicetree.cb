@@ -49,6 +49,15 @@ chip soc/intel/meteorlake
 	register "tcss_ports[2]" = "TCSS_PORT_EMPTY"
 	register "tcss_ports[3]" = "TCSS_PORT_EMPTY"
 
+	# The rear HDMI and DisplayPort connectors are TCSS ports 3 and 4 in legacy (fixed) mode
+	# (vendor VBT: TC3 HDMI, TC4 DP dual mode, neither Type-C). Their hot-plug and DDC pads only
+	# get their native function from FSP-M when these are set; without them Linux's i915 sees no
+	# live HPD on the legacy ports (SDEISR) and reports every connector disconnected.
+	register "ddi_ports_config" = "{
+		[DDI_PORT_3] = DDI_ENABLE_HPD | DDI_ENABLE_DDC,
+		[DDI_PORT_4] = DDI_ENABLE_HPD | DDI_ENABLE_DDC,
+	}"
+
 	device domain 0 on
 		device ref system_agent on end
 		device ref igpu on end
