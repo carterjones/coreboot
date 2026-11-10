@@ -4,13 +4,49 @@
 #define _SOC_METEORLAKE_PCI_DEVS_H_
 
 #include <device/pci_def.h>
+#include <device/pci_type.h>
 
 #define _PCI_DEVFN(slot, func)	PCI_DEVFN(PCI_DEV_SLOT_ ## slot, func)
+
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+/*
+ * The desktop SoC and the chipset are separate PCI root buses in segment 0. The SoC's devices
+ * are on bus 0 (domain 0 in the devicetree) and the chipset's devices are on bus 0x80
+ * (domain 1). Both buses have devices in the same slots, for example 14.0 and 1f.x.
+ */
+#define PCH_PCI_BUS		0x80
+#define PCH_DOMAIN_ID		1
+
+/*
+ * Raw PCI address of a device given its devfn, for code that cannot look the device up in the
+ * devicetree (SMM and wake source logging). Slots from the first chipset slot up are on the
+ * chipset bus, except the P2SB and the PMC, which the SoC die keeps (its GPIO communities are
+ * on the SoC's PCR space and the vendor firmware programs its PMC).
+ */
+#define SOC_DEVFN_ON_PCH(devfn) \
+	(PCI_SLOT(devfn) >= PCI_DEV_SLOT_THC && (devfn) != PCI_DEVFN_P2SB && \
+	 (devfn) != PCI_DEVFN_PMC)
+#define SOC_PCI_DEV_FROM_DEVFN(devfn) \
+	PCI_DEV(SOC_DEVFN_ON_PCH(devfn) ? PCH_PCI_BUS : 0, PCI_SLOT(devfn), PCI_FUNC(devfn))
+#endif
+
 #if !defined(__SIMPLE_DEVICE__)
 #include <device/device.h>
 #define _PCI_DEV(slot, func)	pcidev_path_on_root_debug(_PCI_DEVFN(slot, func), __func__)
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+DEVTREE_CONST struct device *soc_pch_pcidev(pci_devfn_t devfn, const char *func);
+#define _PCH_DEV(slot, func)	soc_pch_pcidev(_PCI_DEVFN(slot, func), __func__)
+#define SOC_PCH_DEVFN_TO_DEV(devfn)	soc_pch_pcidev(devfn, __func__)
+#else
+#define _PCH_DEV(slot, func)	_PCI_DEV(slot, func)
+#endif
 #else
 #define _PCI_DEV(slot, func)	PCI_DEV(0, PCI_DEV_SLOT_ ## slot, func)
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+#define _PCH_DEV(slot, func)	PCI_DEV(PCH_PCI_BUS, PCI_DEV_SLOT_ ## slot, func)
+#else
+#define _PCH_DEV(slot, func)	_PCI_DEV(slot, func)
+#endif
 #endif
 
 /* System Agent Devices */
@@ -87,44 +123,44 @@
 #define PCI_DEV_SLOT_THC	0x10
 #define  PCI_DEVFN_THC0		_PCI_DEVFN(THC, 0)
 #define  PCI_DEVFN_THC1		_PCI_DEVFN(THC, 1)
-#define  PCI_DEV_THC0		_PCI_DEV(THC, 0)
-#define  PCI_DEV_THC1		_PCI_DEV(THC, 1)
+#define  PCI_DEV_THC0		_PCH_DEV(THC, 0)
+#define  PCI_DEV_THC1		_PCH_DEV(THC, 1)
 
 #define PCI_DEV_SLOT_ISH	0x12
 #define  PCI_DEVFN_ISH		_PCI_DEVFN(ISH, 0)
 #define  PCI_DEVFN_GSPI2	_PCI_DEVFN(ISH, 6)
 #define  PCI_DEVFN_UFS		_PCI_DEVFN(ISH, 7)
-#define  PCI_DEV_ISH		_PCI_DEV(ISH, 0)
-#define  PCI_DEV_GSPI2		_PCI_DEV(ISH, 6)
-#define  PCI_DEV_UFS		_PCI_DEV(ISH, 7)
+#define  PCI_DEV_ISH		_PCH_DEV(ISH, 0)
+#define  PCI_DEV_GSPI2		_PCH_DEV(ISH, 6)
+#define  PCI_DEV_UFS		_PCH_DEV(ISH, 7)
 
 #define PCI_DEV_SLOT_IOE	0x13
 #define  PCI_DEVFN_IOE_P2SB	_PCI_DEVFN(IOE, 0)
 #define  PCI_DEVFN_IOE_PMC	_PCI_DEVFN(IOE, 2)
 #define  PCI_DEVFN_IOE_SRAM	_PCI_DEVFN(IOE, 3)
-#define  PCI_DEV_IOE_P2SB	_PCI_DEV(IOE, 0)
-#define  PCI_DEV_IOE_PMC	_PCI_DEV(IOE, 2)
-#define  PCI_DEV_IOE_SRAM	_PCI_DEV(IOE, 3)
+#define  PCI_DEV_IOE_P2SB	_PCH_DEV(IOE, 0)
+#define  PCI_DEV_IOE_PMC	_PCH_DEV(IOE, 2)
+#define  PCI_DEV_IOE_SRAM	_PCH_DEV(IOE, 3)
 
 #define PCI_DEV_SLOT_XHCI	0x14
 #define  PCI_DEVFN_XHCI		_PCI_DEVFN(XHCI, 0)
 #define  PCI_DEVFN_USBOTG	_PCI_DEVFN(XHCI, 1)
 #define  PCI_DEVFN_SRAM		_PCI_DEVFN(XHCI, 2)
 #define  PCI_DEVFN_CNVI_WIFI	_PCI_DEVFN(XHCI, 3)
-#define  PCI_DEV_XHCI		_PCI_DEV(XHCI, 0)
-#define  PCI_DEV_USBOTG		_PCI_DEV(XHCI, 1)
-#define  PCI_DEV_SRAM		_PCI_DEV(XHCI, 2)
-#define  PCI_DEV_CNVI_WIFI	_PCI_DEV(XHCI, 3)
+#define  PCI_DEV_XHCI		_PCH_DEV(XHCI, 0)
+#define  PCI_DEV_USBOTG		_PCH_DEV(XHCI, 1)
+#define  PCI_DEV_SRAM		_PCH_DEV(XHCI, 2)
+#define  PCI_DEV_CNVI_WIFI	_PCH_DEV(XHCI, 3)
 
 #define PCI_DEV_SLOT_SIO0	0x15
 #define  PCI_DEVFN_I2C0		_PCI_DEVFN(SIO0, 0)
 #define  PCI_DEVFN_I2C1		_PCI_DEVFN(SIO0, 1)
 #define  PCI_DEVFN_I2C2		_PCI_DEVFN(SIO0, 2)
 #define  PCI_DEVFN_I2C3		_PCI_DEVFN(SIO0, 3)
-#define  PCI_DEV_I2C0		_PCI_DEV(SIO0, 0)
-#define  PCI_DEV_I2C1		_PCI_DEV(SIO0, 1)
-#define  PCI_DEV_I2C2		_PCI_DEV(SIO0, 2)
-#define  PCI_DEV_I2C3		_PCI_DEV(SIO0, 3)
+#define  PCI_DEV_I2C0		_PCH_DEV(SIO0, 0)
+#define  PCI_DEV_I2C1		_PCH_DEV(SIO0, 1)
+#define  PCI_DEV_I2C2		_PCH_DEV(SIO0, 2)
+#define  PCI_DEV_I2C3		_PCH_DEV(SIO0, 3)
 
 #define PCI_DEV_SLOT_CSE	0x16
 #define  PCI_DEVFN_CSE		_PCI_DEVFN(CSE, 0)
@@ -133,32 +169,32 @@
 #define  PCI_DEVFN_CSE_KT	_PCI_DEVFN(CSE, 3)
 #define  PCI_DEVFN_CSE_3	_PCI_DEVFN(CSE, 4)
 #define  PCI_DEVFN_CSE_4	_PCI_DEVFN(CSE, 5)
-#define  PCI_DEV_CSE		_PCI_DEV(CSE, 0)
-#define  PCI_DEV_CSE_2		_PCI_DEV(CSE, 1)
-#define  PCI_DEV_CSE_IDER	_PCI_DEV(CSE, 2)
-#define  PCI_DEV_CSE_KT		_PCI_DEV(CSE, 3)
-#define  PCI_DEV_CSE_3		_PCI_DEV(CSE, 4)
-#define  PCI_DEV_CSE_4		_PCI_DEV(CSE, 5)
+#define  PCI_DEV_CSE		_PCH_DEV(CSE, 0)
+#define  PCI_DEV_CSE_2		_PCH_DEV(CSE, 1)
+#define  PCI_DEV_CSE_IDER	_PCH_DEV(CSE, 2)
+#define  PCI_DEV_CSE_KT		_PCH_DEV(CSE, 3)
+#define  PCI_DEV_CSE_3		_PCH_DEV(CSE, 4)
+#define  PCI_DEV_CSE_4		_PCH_DEV(CSE, 5)
 
 #define PCI_DEV_SLOT_SATA	0x17
 #define  PCI_DEVFN_SATA		_PCI_DEVFN(SATA, 0)
-#define  PCI_DEV_SATA		_PCI_DEV(SATA, 0)
+#define  PCI_DEV_SATA		_PCH_DEV(SATA, 0)
 
 #define PCI_DEV_SLOT_ISSE	0x18
 #define  PCI_DEVFN_ISSE1	_PCI_DEVFN(ESE, 0)
 #define  PCI_DEVFN_ISSE2	_PCI_DEVFN(ESE, 1)
 #define  PCI_DEVFN_ISSE3	_PCI_DEVFN(ESE, 2)
-#define  PCI_DEV_ISSE1		_PCI_DEV(ESE, 0)
-#define  PCI_DEV_ISSE2		_PCI_DEV(ESE, 1)
-#define  PCI_DEV_ISSE3		_PCI_DEV(ESE, 2)
+#define  PCI_DEV_ISSE1		_PCH_DEV(ESE, 0)
+#define  PCI_DEV_ISSE2		_PCH_DEV(ESE, 1)
+#define  PCI_DEV_ISSE3		_PCH_DEV(ESE, 2)
 
 #define PCI_DEV_SLOT_SIO1	0x19
 #define  PCI_DEVFN_I2C4		_PCI_DEVFN(SIO1, 0)
 #define  PCI_DEVFN_I2C5		_PCI_DEVFN(SIO1, 1)
 #define  PCI_DEVFN_UART2	_PCI_DEVFN(SIO1, 2)
-#define  PCI_DEV_I2C4		_PCI_DEV(SIO1, 0)
-#define  PCI_DEV_I2C5		_PCI_DEV(SIO1, 1)
-#define  PCI_DEV_UART2		_PCI_DEV(SIO1, 2)
+#define  PCI_DEV_I2C4		_PCH_DEV(SIO1, 0)
+#define  PCI_DEV_I2C5		_PCH_DEV(SIO1, 1)
+#define  PCI_DEV_UART2		_PCH_DEV(SIO1, 2)
 
 #define PCI_DEV_SLOT_PCIE_1	0x1c
 #define  PCI_DEVFN_PCIE1	_PCI_DEVFN(PCIE_1, 0)
@@ -169,14 +205,14 @@
 #define  PCI_DEVFN_PCIE6	_PCI_DEVFN(PCIE_1, 5)
 #define  PCI_DEVFN_PCIE7	_PCI_DEVFN(PCIE_1, 6)
 #define  PCI_DEVFN_PCIE8	_PCI_DEVFN(PCIE_1, 7)
-#define  PCI_DEV_PCIE1		_PCI_DEV(PCIE_1, 0)
-#define  PCI_DEV_PCIE2		_PCI_DEV(PCIE_1, 1)
-#define  PCI_DEV_PCIE3		_PCI_DEV(PCIE_1, 2)
-#define  PCI_DEV_PCIE4		_PCI_DEV(PCIE_1, 3)
-#define  PCI_DEV_PCIE5		_PCI_DEV(PCIE_1, 4)
-#define  PCI_DEV_PCIE6		_PCI_DEV(PCIE_1, 5)
-#define  PCI_DEV_PCIE7		_PCI_DEV(PCIE_1, 6)
-#define  PCI_DEV_PCIE8		_PCI_DEV(PCIE_1, 7)
+#define  PCI_DEV_PCIE1		_PCH_DEV(PCIE_1, 0)
+#define  PCI_DEV_PCIE2		_PCH_DEV(PCIE_1, 1)
+#define  PCI_DEV_PCIE3		_PCH_DEV(PCIE_1, 2)
+#define  PCI_DEV_PCIE4		_PCH_DEV(PCIE_1, 3)
+#define  PCI_DEV_PCIE5		_PCH_DEV(PCIE_1, 4)
+#define  PCI_DEV_PCIE6		_PCH_DEV(PCIE_1, 5)
+#define  PCI_DEV_PCIE7		_PCH_DEV(PCIE_1, 6)
+#define  PCI_DEV_PCIE8		_PCH_DEV(PCIE_1, 7)
 
 #define PCI_DEV_SLOT_SIO2	0x1e
 #define  PCI_DEVFN_UART0	_PCI_DEVFN(SIO2, 0)
@@ -185,12 +221,12 @@
 #define  PCI_DEVFN_GSPI1	_PCI_DEVFN(SIO2, 3)
 #define  PCI_DEVFN_TSN1		_PCI_DEVFN(SIO2, 4)
 #define  PCI_DEVFN_TSN2		_PCI_DEVFN(SIO2, 5)
-#define  PCI_DEV_UART0		_PCI_DEV(SIO2, 0)
-#define  PCI_DEV_UART1		_PCI_DEV(SIO2, 1)
-#define  PCI_DEV_GSPI0		_PCI_DEV(SIO2, 2)
-#define  PCI_DEV_GSPI1		_PCI_DEV(SIO2, 3)
-#define  PCI_DEV_TSN1		_PCI_DEV(SIO2, 4)
-#define  PCI_DEV_TSN2		_PCI_DEV(SIO2, 5)
+#define  PCI_DEV_UART0		_PCH_DEV(SIO2, 0)
+#define  PCI_DEV_UART1		_PCH_DEV(SIO2, 1)
+#define  PCI_DEV_GSPI0		_PCH_DEV(SIO2, 2)
+#define  PCI_DEV_GSPI1		_PCH_DEV(SIO2, 3)
+#define  PCI_DEV_TSN1		_PCH_DEV(SIO2, 4)
+#define  PCI_DEV_TSN2		_PCH_DEV(SIO2, 5)
 
 #define PCI_DEV_SLOT_ESPI	0x1f
 #define  PCI_DEVFN_ESPI		_PCI_DEVFN(ESPI, 0)
@@ -201,7 +237,7 @@
 #define  PCI_DEVFN_SPI		_PCI_DEVFN(ESPI, 5)
 #define  PCI_DEVFN_GBE		_PCI_DEVFN(ESPI, 6)
 #define  PCI_DEVFN_NPK		_PCI_DEVFN(ESPI, 7)
-#define  PCI_DEV_ESPI		_PCI_DEV(ESPI, 0)
+#define  PCI_DEV_ESPI		_PCH_DEV(ESPI, 0)
 #define  PCI_DEV_P2SB		_PCI_DEV(ESPI, 1)
 
 #if !ENV_RAMSTAGE
@@ -216,11 +252,11 @@
 #define  PCI_DEV_PMC		_PCI_DEV(ESPI, 2)
 #endif
 
-#define  PCI_DEV_HDA		_PCI_DEV(ESPI, 3)
-#define  PCI_DEV_SMBUS		_PCI_DEV(ESPI, 4)
-#define  PCI_DEV_SPI		_PCI_DEV(ESPI, 5)
-#define  PCI_DEV_GBE		_PCI_DEV(ESPI, 6)
-#define  PCI_DEV_NPK		_PCI_DEV(ESPI, 7)
+#define  PCI_DEV_HDA		_PCH_DEV(ESPI, 3)
+#define  PCI_DEV_SMBUS		_PCH_DEV(ESPI, 4)
+#define  PCI_DEV_SPI		_PCH_DEV(ESPI, 5)
+#define  PCI_DEV_GBE		_PCH_DEV(ESPI, 6)
+#define  PCI_DEV_NPK		_PCH_DEV(ESPI, 7)
 
 /* for common code */
 #define MIN_PCH_SLOT		PCI_DEV_SLOT_THC
