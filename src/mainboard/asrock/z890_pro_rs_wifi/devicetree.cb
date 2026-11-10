@@ -1,0 +1,47 @@
+#include <intelblocks/tcss.h>
+
+chip soc/intel/meteorlake
+	# GPE0 banks as the vendor firmware routes them: GPP_B, the virtual USB
+	# group and the virtual LPC group. The LPC group carries the one GPE event the ACPI handles.
+	register "pmc_gpe0_dw0" = "PMC_GPP_B"
+	register "pmc_gpe0_dw1" = "PMC_GPP_VGPIO_USB"
+	register "pmc_gpe0_dw2" = "PMC_GPP_VGPIO_LPC"
+
+	# The vendor firmware leaves chipset I2C0 and I2C2 enabled in PCI mode (80:15.0 and
+	# 80:15.2). With every Serial IO controller off, FSP-S changes the chipset
+	# function-disable bits and leaves a global reset pending, which ended every first boot.
+	register "serial_io_i2c_mode" = "{
+		[PchSerialIoIndexI2C0] = PchSerialIoPci,
+		[PchSerialIoIndexI2C2] = PchSerialIoPci,
+	}"
+
+
+	device domain 0 on
+		device ref system_agent on end
+		device ref igpu on end
+
+		# Crash log: the SoC PMC's records are read through this SRAM's BAR.
+		device ref soc_shared_sram on end
+
+	end
+
+	device domain 1 on
+		device ref heci1 on end
+		device ref i2c0 on end
+		device ref i2c2 on end
+		# CnviMode 1 (Auto), as the vendor leaves it: with no CNVi radio module FSP-S then only
+		# hides the function. CnviMode 0 makes FSP-S set its function-disable bit, which the
+		# vendor leaves clear, and queue a global reset. The Wi-Fi card is a discrete AX210 on
+		# a root port.
+		device ref cnvi_wifi on end
+		# The two chipset root ports in use: 80:1c.0 (port 3, RTL8125 LAN) and 80:1c.3 (port 4,
+		# AX210 Wi-Fi). Left off, coreboot neither numbers their buses nor gives them windows
+		# ("bridge configuration invalid ([bus 00-00])" in Linux), and the OS-assigned windows
+		# at 0xb8000000 do not reach the cards.
+		device ref pcie_rp1 on end
+		device ref pcie_rp4 on end
+		device ref pch_espi on
+			register "gen1_dec" = "LPC_IO(0xa00, 0x40)"
+		end
+	end
+end

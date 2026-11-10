@@ -1,0 +1,6 @@
+Category: desktop
+ROM IC: unknown
+ROM package: unknown
+ROM socketed: unknown
+Flashrom support: unknown
+Release year: 2024

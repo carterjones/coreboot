@@ -1,0 +1,31 @@
+## SPDX-License-Identifier: GPL-2.0-only
+
+config BOARD_ASROCK_Z890_PRO_RS_WIFI
+	bool
+	select BOARD_ROMSIZE_KB_32768
+	select HAVE_ACPI_RESUME
+	select HAVE_ACPI_TABLES
+	select INTEL_GMA_HAVE_VBT
+	select SOC_INTEL_ARROWLAKE_S
+
+if BOARD_ASROCK_Z890_PRO_RS_WIFI
+
+config MAINBOARD_DIR
+	default "asrock/z890_pro_rs_wifi"
+
+config MAINBOARD_PART_NUMBER
+	default "Z890 Pro RS WiFi"
+
+config MAINBOARD_VENDOR
+	default "ASRock"
+
+config CBFS_SIZE
+	default 0x1000000
+
+config USE_PM_ACPI_TIMER
+	default n
+
+config USE_LEGACY_8254_TIMER
+	default y
+
+endif

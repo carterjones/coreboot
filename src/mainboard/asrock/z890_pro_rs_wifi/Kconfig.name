@@ -1,0 +1,4 @@
+## SPDX-License-Identifier: GPL-2.0-only
+
+config BOARD_ASROCK_Z890_PRO_RS_WIFI
+	bool "Z890 Pro RS WiFi"
