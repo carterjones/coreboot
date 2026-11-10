@@ -11,6 +11,7 @@
 #include <device/pci_ops.h>
 #include <intelblocks/irq.h>
 #include <intelblocks/lpss.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/uart.h>
 #include <soc/pci_devs.h>
 #include <soc/iomap.h>
@@ -62,7 +63,7 @@ static pci_devfn_t uart_console_get_pci_bdf(void)
 	if (devfn == PCI_DEVFN_INVALID)
 		return PCI_DEV_INVALID;
 
-	return PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn));
+	return SOC_PCI_DEV_FROM_DEVFN(devfn);
 }
 
 const struct device *uart_get_device(void)

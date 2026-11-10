@@ -3,6 +3,7 @@
 #include <console/console.h>
 #include <device/device.h>
 #include <device/mmio.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/thermal.h>
 #include <soc/pci_devs.h>
 
@@ -17,7 +18,7 @@ void pch_thermal_configuration(void)
 	const struct device *dev;
 	struct resource *res;
 
-	dev = pcidev_path_on_root(PCH_DEVFN_THERMAL);
+	dev = SOC_PCH_DEVFN_TO_DEV(PCH_DEVFN_THERMAL);
 	if (dev && !dev->enabled)
 		return;
 

@@ -4,6 +4,7 @@
 #include <console/console.h>
 #include <device/pci_ops.h>
 #include <elog.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/pmclib.h>
 #include <intelblocks/xhci.h>
 #include <soc/pci_devs.h>
@@ -49,8 +50,7 @@ static void pch_log_rp_wake_source(void)
 	};
 
 	for (i = 0; i < MIN(max_port, ARRAY_SIZE(pme_map)); ++i) {
-		if (pci_dev_is_wake_source(PCI_DEV(0, PCI_SLOT(pme_map[i].devfn),
-						   PCI_FUNC(pme_map[i].devfn))))
+		if (pci_dev_is_wake_source(SOC_PCI_DEV_FROM_DEVFN(pme_map[i].devfn)))
 			elog_add_event_wake(pme_map[i].wake_source, 0);
 	}
 }
@@ -76,7 +76,7 @@ static void pch_log_pme_internal_wake_source(void)
 
 	for (i = 0; i < ARRAY_SIZE(ipme_map); i++) {
 		unsigned int devfn = ipme_map[i].devfn;
-		if (pci_dev_is_wake_source(PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn)))) {
+		if (pci_dev_is_wake_source(SOC_PCI_DEV_FROM_DEVFN(devfn))) {
 			elog_add_event_wake(ipme_map[i].wake_source, 0);
 			dev_found = true;
 		}
@@ -85,7 +85,7 @@ static void pch_log_pme_internal_wake_source(void)
 	/* Check Thunderbolt ports */
 	for (i = 0; i < NUM_TBT_FUNCTIONS; i++) {
 		unsigned int devfn = PCI_DEVFN_TBT(i);
-		if (pci_dev_is_wake_source(PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn)))) {
+		if (pci_dev_is_wake_source(SOC_PCI_DEV_FROM_DEVFN(devfn))) {
 			elog_add_event_wake(ELOG_WAKE_SOURCE_PME_TBT, i);
 			dev_found = true;
 		}
@@ -94,7 +94,7 @@ static void pch_log_pme_internal_wake_source(void)
 	/* Check DMA devices */
 	for (i = 0; i < NUM_TCSS_DMA_FUNCTIONS; i++) {
 		unsigned int devfn = PCI_DEVFN_TCSS_DMA(i);
-		if (pci_dev_is_wake_source(PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn)))) {
+		if (pci_dev_is_wake_source(SOC_PCI_DEV_FROM_DEVFN(devfn))) {
 			elog_add_event_wake(ELOG_WAKE_SOURCE_PME_TCSS_DMA, i);
 			dev_found = true;
 		}

@@ -11,6 +11,7 @@
 #include <intelblocks/cfg.h>
 #include <intelblocks/gspi.h>
 #include <intelblocks/lpss.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/spi.h>
 #include <soc/iomap.h>
 #include <soc/pci_devs.h>
@@ -119,14 +120,14 @@ static const struct gspi_cfg *gspi_get_cfg(void)
 static uintptr_t gspi_get_base_addr(int devfn,
 				DEVTREE_CONST struct device *dev)
 {
-	pci_devfn_t pci_dev = PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn));
+	pci_devfn_t pci_dev = SOC_PCI_DEV_FROM_DEVFN(devfn);
 	return ALIGN_DOWN(pci_read_config32(pci_dev, PCI_BASE_ADDRESS_0), 16);
 }
 
 static void gspi_set_base_addr(int devfn, DEVTREE_CONST struct device *dev,
 				uintptr_t base)
 {
-	pci_devfn_t pci_dev = PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn));
+	pci_devfn_t pci_dev = SOC_PCI_DEV_FROM_DEVFN(devfn);
 	pci_write_config32(pci_dev, PCI_BASE_ADDRESS_0, base);
 	pci_write_config32(pci_dev, PCI_COMMAND, PCI_COMMAND_MEMORY |
 			   PCI_COMMAND_MASTER);
@@ -469,7 +470,7 @@ static int gspi_ctrlr_setup(const struct spi_slave *dev)
 	devfn = gspi_soc_bus_to_devfn(p->gspi_bus);
 
 	/* Ensure controller is in D0 state */
-	lpss_set_power_state(PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn)), STATE_D0);
+	lpss_set_power_state(SOC_PCI_DEV_FROM_DEVFN(devfn), STATE_D0);
 
 	/* Take controller out of reset, keeping DMA in reset. */
 	gspi_write_mmio_reg(p, RESETS, CTRLR_ACTIVE | DMA_RESET);

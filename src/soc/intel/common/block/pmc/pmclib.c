@@ -10,6 +10,7 @@
 #include <cpu/x86/smm.h>
 #include <console/console.h>
 #include <halt.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/pmc_ipc.h>
 #include <intelblocks/pmclib.h>
 #include <intelblocks/gpio.h>
@@ -459,9 +460,9 @@ static bool pmc_get_global_reset_sts_mmio(void)
 static bool pmc_get_global_reset_sts_pci(void)
 {
 #if defined(__SIMPLE_DEVICE__)
-	pci_devfn_t dev = PCI_DEV(0, PCI_SLOT(PCH_DEVFN_PMC), PCI_FUNC(PCH_DEVFN_PMC));
+	pci_devfn_t dev = SOC_PCI_DEV_FROM_DEVFN(PCH_DEVFN_PMC);
 #else
-	struct device *dev = pcidev_path_on_root(PCH_DEVFN_PMC);
+	struct device *dev = SOC_PCH_DEVFN_TO_DEV(PCH_DEVFN_PMC);
 	if (!dev)
 		return false;
 #endif
@@ -721,9 +722,9 @@ static void pmc_clear_pmcon_pwr_failure_sts_mmio(void)
 static void pmc_clear_pmcon_pwr_failure_sts_pci(void)
 {
 #if defined(__SIMPLE_DEVICE__)
-	pci_devfn_t dev = PCI_DEV(0, PCI_SLOT(PCH_DEVFN_PMC), PCI_FUNC(PCH_DEVFN_PMC));
+	pci_devfn_t dev = SOC_PCI_DEV_FROM_DEVFN(PCH_DEVFN_PMC);
 #else
-	struct device *dev = pcidev_path_on_root(PCH_DEVFN_PMC);
+	struct device *dev = SOC_PCH_DEVFN_TO_DEV(PCH_DEVFN_PMC);
 	if (!dev)
 		return;
 #endif
@@ -753,7 +754,7 @@ static void pmc_clear_pmcon_sts_mmio(void)
 
 static void pmc_clear_pmcon_sts_pci(void)
 {
-	struct device *dev = pcidev_path_on_root(PCH_DEVFN_PMC);
+	struct device *dev = SOC_PCH_DEVFN_TO_DEV(PCH_DEVFN_PMC);
 	if (!dev)
 		return;
 

@@ -6,6 +6,7 @@
 #include <device/xhci.h>
 #include <elog.h>
 #include <inttypes.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/xhci.h>
 #include <soc/pci_devs.h>
 #include <stdint.h>
@@ -74,8 +75,7 @@ bool xhci_update_wake_event(const struct xhci_wake_info *wake_info,
 
 	for (i = 0; i < wake_info_count; ++i) {
 		/* Assumes BAR0 is MBAR */
-		pci_devfn_t devfn = PCI_DEV(0, PCI_SLOT(wake_info[i].xhci_dev),
-					    PCI_FUNC(wake_info[i].xhci_dev));
+		pci_devfn_t devfn = SOC_PCI_DEV_FROM_DEVFN(wake_info[i].xhci_dev);
 		mmio_base = pci_s_read_config32(devfn, PCI_BASE_ADDRESS_0);
 		mmio_base &= ~PCI_BASE_ADDRESS_MEM_ATTR_MASK;
 

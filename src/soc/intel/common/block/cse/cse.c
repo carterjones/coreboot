@@ -13,6 +13,7 @@
 #include <intelblocks/cse.h>
 #include <intelblocks/fast_spi.h>
 #include <intelblocks/me.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/pmclib.h>
 #include <intelblocks/post_codes.h>
 #include <option.h>
@@ -715,7 +716,7 @@ bool is_cse_devfn_visible(unsigned int devfn)
 		return false;
 	}
 
-	if (pci_read_config16(PCI_DEV(0, slot, func), PCI_VENDOR_ID) == 0xFFFF) {
+	if (pci_read_config16(SOC_PCI_DEV_FROM_DEVFN(PCI_DEVFN(slot, func)), PCI_VENDOR_ID) == 0xFFFF) {
 		printk(BIOS_WARNING, "HECI: CSE device %02x.%01x is hidden\n", slot, func);
 		return false;
 	}
@@ -1042,7 +1043,7 @@ static void enable_cse_idle(pci_devfn_t dev)
 
 enum cse_device_state get_cse_device_state(unsigned int devfn)
 {
-	pci_devfn_t dev = PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn));
+	pci_devfn_t dev = SOC_PCI_DEV_FROM_DEVFN(devfn);
 	uint32_t dev_idle_ctrl = read_bar(dev, MMIO_CSE_DEVIDLE);
 	if ((dev_idle_ctrl & CSE_DEV_IDLE) == CSE_DEV_IDLE)
 		return DEV_IDLE;
@@ -1069,7 +1070,7 @@ static void ensure_cse_idle(pci_devfn_t dev)
 bool set_cse_device_state(unsigned int devfn, enum cse_device_state requested_state)
 {
 	enum cse_device_state current_state = get_cse_device_state(devfn);
-	pci_devfn_t dev = PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn));
+	pci_devfn_t dev = SOC_PCI_DEV_FROM_DEVFN(devfn);
 
 	if (current_state == requested_state)
 		return true;
@@ -1107,7 +1108,7 @@ void heci_init(void)
 {
 	for (int i = 0; i < CONFIG_MAX_HECI_DEVICES; i++) {
 		unsigned int devfn = PCI_DEVFN(PCH_DEV_SLOT_CSE, i);
-		pci_devfn_t dev = PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn));
+		pci_devfn_t dev = SOC_PCI_DEV_FROM_DEVFN(devfn);
 
 		if (!is_cse_devfn_visible(devfn))
 			continue;

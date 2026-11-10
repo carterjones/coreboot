@@ -9,6 +9,7 @@
 #include <drivers/i2c/designware/dw_i2c.h>
 #include <intelblocks/cfg.h>
 #include <intelblocks/lpss.h>
+#include <intelblocks/pci_bus.h>
 #include <soc/iomap.h>
 #include <soc/pci_devs.h>
 
@@ -49,7 +50,7 @@ static int lpss_i2c_early_init_bus(unsigned int bus)
 	}
 
 	/* Look up the controller device in the devicetree */
-	dev = PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn));
+	dev = SOC_PCI_DEV_FROM_DEVFN(devfn);
 
 	/* Skip if not enabled for early init */
 	config = dw_i2c_get_soc_cfg(bus);
@@ -91,7 +92,7 @@ uintptr_t dw_i2c_base_address(unsigned int bus)
 		return 0;
 
 	/* Form a PCI address for this device */
-	dev = PCI_DEV(0, PCI_SLOT(devfn), PCI_FUNC(devfn));
+	dev = SOC_PCI_DEV_FROM_DEVFN(devfn);
 
 	/* Read the first base address for this device */
 	base = ALIGN_DOWN(pci_read_config32(dev, PCI_BASE_ADDRESS_0), 16);

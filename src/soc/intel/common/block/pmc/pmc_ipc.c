@@ -4,6 +4,7 @@
 #include <device/mmio.h>
 #include <console/console.h>
 #include <delay.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/pmclib.h>
 #include <intelblocks/pmc_ipc.h>
 #include <soc/pci_devs.h>
@@ -225,7 +226,7 @@ void pmc_ipc_acpi_set_pci_clock(unsigned int pcie_rp, unsigned int clock_pin, bo
 		1 << pcie_rp,			/* PCIe root port to be modified */
 		(enable ? 1 : 0) << pcie_rp,	/* PCIe root port to set */
 	};
-	const char *method = acpi_device_path_join(pcidev_path_on_root(PCH_DEVFN_PMC), "IPCS");
+	const char *method = acpi_device_path_join(SOC_PCH_DEVFN_TO_DEV(PCH_DEVFN_PMC), "IPCS");
 
 	if (!method) {
 		printk(BIOS_ERR, "%s: Unable to find PMC device IPCS method\n", __func__);

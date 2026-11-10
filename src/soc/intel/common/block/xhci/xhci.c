@@ -8,6 +8,7 @@
 #include <device/pci_ids.h>
 #include <drivers/usb/acpi/chip.h>
 #include <intelblocks/acpi.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/xhci.h>
 #include <soc/pci_devs.h>
 
@@ -86,7 +87,7 @@ void usb_xhci_disable_unused(bool (*ext_usb_xhci_en_cb)(unsigned int port_type,
 	struct drivers_usb_acpi_config *config;
 	bool enable;
 
-	xhci = pcidev_path_on_root(PCH_DEVFN_XHCI);
+	xhci = SOC_PCH_DEVFN_TO_DEV(PCH_DEVFN_XHCI);
 	if (!xhci) {
 		printk(BIOS_ERR, "%s: Could not locate XHCI device in DT\n", __func__);
 		return;

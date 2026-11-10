@@ -8,6 +8,7 @@
 #include <device/pci_def.h>
 #include <device/pci_ops.h>
 #include <device/pci_type.h>
+#include <intelblocks/pci_bus.h>
 #include <intelblocks/pcie_rp.h>
 
 static int pcie_rp_original_idx(
@@ -60,7 +61,7 @@ static void pcie_rp_scan_groups(int mapping[], const struct pcie_rp_group *const
 	for (group = groups; group->count; ++group) {
 		unsigned int fn;
 		for (fn = rp_start_fn(group); fn <= rp_end_fn(group); ++fn) {
-			const pci_devfn_t dev = PCI_DEV(0, group->slot, fn);
+			const pci_devfn_t dev = SOC_PCI_DEV_FROM_DEVFN(PCI_DEVFN(group->slot, fn));
 			const uint16_t did = pci_s_read_config16(dev, PCI_DEVICE_ID);
 			if (did == 0xffff) {
 				if (fn == 0)
