@@ -6,6 +6,7 @@
 #include <device/pci_ids.h>
 #include <device/pci_rom.h>
 #include <device/pci_def.h>
+#include <string.h>
 
 /*
  * When the device is an enabled ATI GPU, fill the VFCT image header and append the
@@ -99,6 +100,12 @@ acpi_vfct_t *acpi_allocate_and_fill_vfct(void)
 		       __func__, image_hdr_len);
 		return NULL;
 	}
+	/*
+	 * cbmem_add() does not clear the buffer, and acpi_fill_header() leaves the checksum,
+	 * OEM revision and creator fields alone. A stale checksum byte would be summed into
+	 * the new checksum below, and the reserved and image header fields would be garbage.
+	 */
+	memset(vfct, 0, image_hdr_len);
 
 	if (acpi_fill_header(&vfct->header, "VFCT", VFCT, sizeof(acpi_vfct_t)) != CB_SUCCESS)
 		return NULL;
