@@ -43,6 +43,11 @@ smm-y += p2sb.c
 smm-y += soc_info.c
 smm-y += xhci.c
 
+ifeq ($(CONFIG_SOC_INTEL_ARROWLAKE_S),y)
+all-y += pcr_pid_arl_s.c
+smm-y += pcr_pid_arl_s.c
+endif
+
 CPPFLAGS_common += -I$(src)/soc/intel/meteorlake
 CPPFLAGS_common += -I$(src)/soc/intel/meteorlake/include
 

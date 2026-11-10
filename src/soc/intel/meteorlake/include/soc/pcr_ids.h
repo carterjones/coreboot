@@ -13,6 +13,21 @@
 #define PID_GPIOCOM4	0xD4
 #define PID_GPIOCOM5	0xD5
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+/*
+ * The chipset's GPIO communities are on sideband ports 0x6e, 0x6d, 0x6c, 0x6b, 0x6a and 0x69 of
+ * the chipset's own P2SB, not of the SoC's. The SoC's PSTH and RTC use two of the same numbers
+ * (PID_PSTH, PID_RTC below), so a community names a virtual port id and soc_pcr_resolve_pid()
+ * turns it into the chipset P2SB and the real port.
+ */
+#define PID_PCH_GPIOCOM0	0xF0	/* port 0x6e */
+#define PID_PCH_GPIOCOM1	0xF1	/* port 0x6d */
+#define PID_PCH_GPIOCOM2	0xF2	/* port 0x6c */
+#define PID_PCH_GPIOCOM3	0xF3	/* port 0x6b */
+#define PID_PCH_GPIOCOM4	0xF4	/* port 0x6a */
+#define PID_PCH_GPIOCOM5	0xF5	/* port 0x69 */
+#endif
+
 #define PID_PSF8	0x08
 #define PID_PSF7	0x07
 #define PID_PSF6	0x06
