@@ -160,6 +160,12 @@ chip soc/intel/meteorlake
 				device pnp 2e.e on end		# TACHIN/PWMOUT assignment: no CR30
 				device pnp 2e.f on end		# function registers: no CR30
 			end
+
+			# TPM module on the SPI TPM header, memory mapped at 0xfed40000. The interrupt
+			# pin is not known, so the driver polls.
+			chip drivers/pc80/tpm
+				device pnp 0.0 on end
+			end
 		end
 	end
 

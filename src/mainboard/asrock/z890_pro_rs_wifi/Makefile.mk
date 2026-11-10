@@ -9,3 +9,4 @@ ramstage-y += mainboard.c
 
 all-y += die.c
 smm-y += die.c
+smm-y += smihandler.c

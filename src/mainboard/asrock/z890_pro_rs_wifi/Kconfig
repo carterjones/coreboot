@@ -6,6 +6,8 @@ config BOARD_ASROCK_Z890_PRO_RS_WIFI
 	select HAVE_ACPI_RESUME
 	select HAVE_ACPI_TABLES
 	select INTEL_GMA_HAVE_VBT
+	select MAINBOARD_HAS_TPM2
+	select MEMORY_MAPPED_TPM
 	select SOC_INTEL_ARROWLAKE_S
 	select SUPERIO_NUVOTON_NCT6687D
 
@@ -13,6 +15,13 @@ if BOARD_ASROCK_Z890_PRO_RS_WIFI
 
 config MAINBOARD_DIR
 	default "asrock/z890_pro_rs_wifi"
+
+config Z890_PTT_OFF
+	bool "Turn Intel PTT off in the CSE, for the TPM module on the header"
+	default y
+	help
+	  Ask the CSE to disable PTT in ramstage. When that changes the CSE's state it ends in a
+	  global reset, after which the TPM module on the header is usable.
 
 config MAINBOARD_PART_NUMBER
 	default "Z890 Pro RS WiFi"
