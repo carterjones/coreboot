@@ -34,13 +34,24 @@
 #define HECI1_BASE_ADDRESS	0xfeda2000
 
 #define VTD_BASE_ADDRESS	0xfc800000
-#define VTD_BASE_SIZE		0x00002000
-
 #define GFXVT_BASE_ADDRESS	0xfc800000
-#define GFXVT_BASE_SIZE		0x1000
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+/*
+ * Arrow Lake-S VT-d engines have 64 KiB register sets (the performance monitoring registers lie
+ * beyond the first 4 KiB), so VTVC0 sits at the next 64 KiB boundary. The vendor firmware uses
+ * DRHD sizes of 2^4 pages and VTVC0 at 0xfc810000.
+ */
+#define VTD_BASE_SIZE		0x00020000
+#define GFXVT_BASE_SIZE		0x10000
+#define VTVC0_BASE_ADDRESS	0xfc810000
+#define VTVC0_BASE_SIZE		0x10000
+#else
+#define VTD_BASE_SIZE		0x00002000
+#define GFXVT_BASE_SIZE		0x1000
 #define VTVC0_BASE_ADDRESS	0xfc801000
 #define VTVC0_BASE_SIZE		0x1000
+#endif
 
 #define UART_BASE_SIZE		0x1000
 #define UART_BASE_0_ADDRESS	0xfe03e000
