@@ -191,6 +191,13 @@ void mainboard_memory_init_params(FSPM_UPD *memupd)
 	run_all_pcie_clocks_free(&memupd->FspmConfig);
 
 	/*
+	 * FSP's own POST codes on port 0x80 instead of I2C ("Enable (Default): Postcode via I2C,
+	 * Disable: Postcode via Port80", FspmUpd.h), so they reach the UART1 header with
+	 * coreboot's.
+	 */
+	memupd->FspmConfig.I2cPostCodeEnable = 0;
+
+	/*
 	 * The iGPU is the primary display, for the payload's framebuffer on the board's HDMI.
 	 * On Auto (the default, 3) a card in PCIE1 becomes primary and FSP-S's GOP leaves the
 	 * iGPU dark: no graphics hand-off block. System76's dGPU boards do the same
