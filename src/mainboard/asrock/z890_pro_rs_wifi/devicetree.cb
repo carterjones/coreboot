@@ -58,6 +58,10 @@ chip soc/intel/meteorlake
 		[DDI_PORT_4] = DDI_ENABLE_HPD | DDI_ENABLE_DDC,
 	}"
 
+	# The vendor runs four 2R DIMMs, two per channel, at 4400 MT/s, its recommendation for
+	# that population; FSP picks 4800 on its own.
+	register "max_dram_speed_mts" = "4400"
+
 	device domain 0 on
 		device ref system_agent on end
 		device ref igpu on end
