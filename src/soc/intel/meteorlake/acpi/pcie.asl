@@ -96,6 +96,7 @@ Method (IRQM, 1, Serialized) {
 	}
 }
 
+#if !CONFIG(SOC_INTEL_ARROWLAKE_S) || defined(ARL_ACPI_PCH)
 Device (RP01)
 {
 	Name (_ADR, 0x001C0000)
@@ -232,6 +233,9 @@ Device (RP08)
 	}
 }
 
+#endif
+
+#if !CONFIG(SOC_INTEL_ARROWLAKE_S) || defined(ARL_ACPI_SOC)
 Device (RP09)
 {
 	Name (_ADR, 0x00060000)
@@ -299,3 +303,4 @@ Device (RP12)
 		Return (IRQM (RPPN))
 	}
 }
+#endif

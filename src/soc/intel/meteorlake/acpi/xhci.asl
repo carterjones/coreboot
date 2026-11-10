@@ -5,7 +5,11 @@
 /* Include UWES method for enabling USB wake */
 #include <soc/intel/common/acpi/xhci_wake.asl>
 
-/* XHCI Controller 0:14.0 */
+/*
+ * XHCI Controller 0:14.0. On Arrow Lake-S it is the chipset's, 80:14.0, with more ports, and the
+ * clock gating methods that used the SoC's PCR access are left out, because the chipset's own PCR
+ * space is not mapped.
+ */
 
 Device (XHCI)
 {
@@ -31,6 +35,7 @@ Device (XHCI)
 	Name (_S0W, 3)	/* D3 can wake device in S0 */
 	Name (_S3W, 3)	/* D3 can wake system from S3 */
 
+#if !CONFIG(SOC_INTEL_ARROWLAKE_S)
 	Method (_PS0, 0, Serialized)
 	{
 		/* Disable Clock Gating */
@@ -42,6 +47,7 @@ Device (XHCI)
 		/* Enable Clock Gating */
 		^^PCRO (PID_XHCI, 0x0, 1 << 3)
 	}
+#endif
 
 	/* Root Hub for Meteorlake */
 	Device (RHUB)
@@ -59,8 +65,25 @@ Device (XHCI)
 		Device (HS08) { Name (_ADR, 8) }
 		Device (HS09) { Name (_ADR, 9) }
 		Device (HS10) { Name (_ADR, 10) }
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+		Device (HS11) { Name (_ADR, 11) }
+		Device (HS12) { Name (_ADR, 12) }
+		Device (HS13) { Name (_ADR, 13) }
+		Device (HS14) { Name (_ADR, 14) }
+		/* USB3 */
+		Device (SS01) { Name (_ADR, 15) }
+		Device (SS02) { Name (_ADR, 16) }
+		Device (SS03) { Name (_ADR, 17) }
+		Device (SS04) { Name (_ADR, 18) }
+		Device (SS05) { Name (_ADR, 19) }
+		Device (SS06) { Name (_ADR, 20) }
+		Device (SS07) { Name (_ADR, 21) }
+		Device (SS08) { Name (_ADR, 22) }
+		Device (SS09) { Name (_ADR, 23) }
+#else
 		/* USB3 */
 		Device (SS01) { Name (_ADR, 11) }
 		Device (SS02) { Name (_ADR, 12) }
+#endif
 	}
 }
