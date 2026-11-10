@@ -608,6 +608,15 @@ static void calc_var_mtrrs_with_hole(struct var_mtrr_state *var_state,
 			   PAT just like it would with WB as default type. */
 			carve_hole = a1 < RANGE_4GB;
 		} else if (range_entry_mtrr_type(next)
+				== MTRR_TYPE_UNCACHEABLE && a1 >= RANGE_4GB) {
+			/* Above 4GiB, only align up into the gap before the
+			   next range and leave the hole WB, as for the last
+			   range: nothing is there, and an OS mapping MMIO into
+			   it would use PAT. Carving the hole out can cost the
+			   one MTRR that keeps all DRAM cacheable. */
+			b2_limit = range_entry_base_mtrr_addr(next);
+			carve_hole = 0;
+		} else if (range_entry_mtrr_type(next)
 				== MTRR_TYPE_UNCACHEABLE) {
 			b2_limit = range_entry_end_mtrr_addr(next);
 			carve_hole = 1;
