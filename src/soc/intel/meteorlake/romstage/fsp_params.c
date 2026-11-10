@@ -98,6 +98,15 @@ static void fill_fspm_pcie_rp_params(FSP_M_CONFIG *m_cfg,
 		m_cfg->PchPcieRpEnableMask = 0; /* Don't care about PCH PCIE RP Mask */
 		pcie_rp_init(m_cfg, m_cfg->PcieRpEnableMask, config->pcie_rp,
 				get_max_pcie_port());
+	} else if (CONFIG(SOC_INTEL_ARROWLAKE_S)) {
+		/*
+		 * The desktop SoC has 12 root ports of its own and the chipset 24. Which of them a
+		 * board uses is not described yet (`PchPcieRpEnableMask` and pcie_rp_init() are
+		 * still to do), so keep the FSP's defaults and leave every port enabled. Zero here
+		 * would turn off the CPU's M.2 and graphics slots.
+		 */
+		m_cfg->PcieRpEnableMask = 0xfff;
+		m_cfg->PchPcieRpEnableMask = 0xffffff;
 	} else {
 		/*
 		 * FIXME: Implement PCIe RP mask for `PchPcieRpEnableMask` and
