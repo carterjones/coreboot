@@ -207,6 +207,7 @@ config FSP_TEMP_RAM_SIZE
 
 config CHIPSET_DEVICETREE
 	string
+	default "soc/intel/meteorlake/chipset_arl_s.cb" if SOC_INTEL_ARROWLAKE_S
 	default "soc/intel/meteorlake/chipset.cb"
 
 config EXT_BIOS_WIN_BASE

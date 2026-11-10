@@ -70,6 +70,26 @@
 #define IOM_BASE_SIZE		0x1600
 #define IOM_BASE_ADDR_MAX	0x3fff0aa15ff
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+/*
+ * Address windows of the two PCI root buses. Bus 0 is the SoC and PCH_PCI_BUS is the chipset.
+ * The bus 0 memory windows start at the top of the DRAM below 4G and stop where the chipset's
+ * window starts.
+ */
+#define SOC_DOMAIN_IO_BASE		0x9000
+#define SOC_DOMAIN_IO_LIMIT		0xffff
+#define SOC_DOMAIN_MEM32_LIMIT		0xb7ffffff
+#define SOC_DOMAIN_MEM64_BASE		0xa000000000ULL
+#define SOC_DOMAIN_MEM64_LIMIT		0x3ffbfffffffULL
+
+#define PCH_DOMAIN_IO_BASE		0x2000
+#define PCH_DOMAIN_IO_LIMIT		0x8bff
+#define PCH_DOMAIN_MEM32_BASE		0xb8000000
+#define PCH_DOMAIN_MEM32_LIMIT		0xbdffffff
+#define PCH_DOMAIN_MEM64_BASE		0x8000000000ULL
+#define PCH_DOMAIN_MEM64_LIMIT		0x9fdfffffffULL
+#endif
+
 /*
  * I/O port address space
  */

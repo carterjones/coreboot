@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
+#include <acpi/acpigen.h>
+#include <cbmem.h>
 #include <device/device.h>
 #include <device/pci.h>
 #include <fsp/api.h>
@@ -29,8 +31,13 @@
 #if CONFIG(HAVE_ACPI_TABLES)
 const char *soc_acpi_name(const struct device *dev)
 {
-	if (dev->path.type == DEVICE_PATH_DOMAIN)
+	if (dev->path.type == DEVICE_PATH_DOMAIN) {
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+		if (dev->path.domain.domain_id == PCH_DOMAIN_ID)
+			return "PCI1";
+#endif
 		return "PCI0";
+	}
 
 	if (dev->path.type == DEVICE_PATH_USB) {
 		switch (dev->path.usb.port_type) {
@@ -178,9 +185,41 @@ static void soc_enable_tracehub(void)
 	}
 }
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+/*
+ * Bus 0 holds the SoC and bus PCH_PCI_BUS the chipset. The ECAM window ends at bus 0xdf, so the
+ * chipset root bus gets the buses from PCH_PCI_BUS up to there.
+ */
+static void soc_set_root_bus_ranges(void)
+{
+	struct device *domain;
+	unsigned int id;
+
+	for (domain = dev_root.downstream->children; domain; domain = domain->sibling) {
+		if (domain->path.type != DEVICE_PATH_DOMAIN)
+			continue;
+
+		id = domain->path.domain.domain_id;
+		if (id == 0) {
+			domain->downstream->secondary = 0;
+			domain->downstream->subordinate = 0;
+			domain->downstream->max_subordinate = PCH_PCI_BUS - 1;
+		} else if (id == PCH_DOMAIN_ID) {
+			domain->downstream->secondary = PCH_PCI_BUS;
+			domain->downstream->subordinate = PCH_PCI_BUS;
+			domain->downstream->max_subordinate = 0xdf;
+		}
+	}
+}
+#endif
+
 void soc_init_pre_device(void *chip_info)
 {
 	config_t *config = config_of_soc();
+
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+	soc_set_root_bus_ranges();
+#endif
 
 	/* Validate TBT image authentication */
 	config->tbt_authentication = ioe_p2sb_sbi_read(PID_IOM,
@@ -233,13 +272,64 @@ static void cpu_set_north_irqs(struct device *dev)
 	irq_program_non_pch();
 }
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+static void domain_add_window(struct device *dev, unsigned int *index, resource_t base,
+			      resource_t limit, unsigned long flags)
+{
+	struct resource *res = new_resource(dev, (*index)++);
+
+	res->base = base;
+	res->limit = limit;
+	res->size = limit - base + 1;
+	res->flags = flags | IORESOURCE_ASSIGNED;
+}
+
+/*
+ * The generic pci_domain_read_resources() hands every domain the whole address space as
+ * subtractive windows. With two root buses each domain needs its own fixed windows instead.
+ */
+static void soc_domain_read_resources(struct device *dev)
+{
+	unsigned int index = 0;
+	const bool pch = dev->path.domain.domain_id == PCH_DOMAIN_ID;
+
+	domain_add_window(dev, &index, pch ? PCH_DOMAIN_IO_BASE : SOC_DOMAIN_IO_BASE,
+			  pch ? PCH_DOMAIN_IO_LIMIT : SOC_DOMAIN_IO_LIMIT, IORESOURCE_IO);
+	domain_add_window(dev, &index, pch ? PCH_DOMAIN_MEM32_BASE : cbmem_top(),
+			  pch ? PCH_DOMAIN_MEM32_LIMIT : SOC_DOMAIN_MEM32_LIMIT, IORESOURCE_MEM);
+	domain_add_window(dev, &index, pch ? PCH_DOMAIN_MEM64_BASE : SOC_DOMAIN_MEM64_BASE,
+			  pch ? PCH_DOMAIN_MEM64_LIMIT : SOC_DOMAIN_MEM64_LIMIT,
+			  IORESOURCE_MEM | IORESOURCE_PCI64 | IORESOURCE_ABOVE_4G);
+}
+
+#if CONFIG(HAVE_ACPI_TABLES)
+/* Each root bus has its own 64-bit window, so the common single-window version does not fit. */
+static void soc_domain_fill_ssdt(const struct device *dev)
+{
+	const bool pch = dev->path.domain.domain_id == PCH_DOMAIN_ID;
+	const uint64_t base = pch ? PCH_DOMAIN_MEM64_BASE : SOC_DOMAIN_MEM64_BASE;
+	const uint64_t limit = pch ? PCH_DOMAIN_MEM64_LIMIT : SOC_DOMAIN_MEM64_LIMIT;
+
+	acpigen_write_scope(acpi_device_path(dev));
+	acpigen_write_name_qword("A4GB", base);
+	acpigen_write_name_qword("A4GS", limit - base + 1);
+	acpigen_pop_len();
+}
+#endif
+#define SOC_DOMAIN_READ_RESOURCES	soc_domain_read_resources
+#define SOC_DOMAIN_FILL_SSDT		soc_domain_fill_ssdt
+#else
+#define SOC_DOMAIN_READ_RESOURCES	pci_domain_read_resources
+#define SOC_DOMAIN_FILL_SSDT		ssdt_set_above_4g_pci
+#endif
+
 static struct device_operations pci_domain_ops = {
-	.read_resources   = &pci_domain_read_resources,
+	.read_resources   = &SOC_DOMAIN_READ_RESOURCES,
 	.set_resources    = &pci_domain_set_resources,
 	.scan_bus         = &pci_host_bridge_scan_bus,
 #if CONFIG(HAVE_ACPI_TABLES)
 	.acpi_name        = &soc_acpi_name,
-	.acpi_fill_ssdt   = ssdt_set_above_4g_pci,
+	.acpi_fill_ssdt   = &SOC_DOMAIN_FILL_SSDT,
 #endif
 };
 
