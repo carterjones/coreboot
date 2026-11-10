@@ -62,6 +62,15 @@ extern struct device_operations ioe_pmc_ops;
 #define   SMI_LOCK			(1 << 4)
 #define   RTC_BATTERY_DEAD		(1 << 2)
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+/*
+ * On Arrow Lake-S the RTC is in the chipset die, so its power status (GEN_PMCON_B
+ * RTC_BATTERY_DEAD) is the chipset PMC's, not the SoC PMC's at PCH_PWRM_BASE_ADDRESS
+ * (0xfe000000), whose GEN_PMCON_B reads RTC_BATTERY_DEAD set on every boot.
+ */
+#define RTC_PWRM_BASE_ADDRESS		0xbed00000
+#endif
+
 /* PMC lockdown configuration register for ST_FDIS_LOCK */
 #define PMC_FDIS_LOCK_REG		GEN_PMCON_B
 

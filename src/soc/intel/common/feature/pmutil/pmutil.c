@@ -196,7 +196,11 @@ int soc_get_rtc_failed(void)
 
 int vbnv_cmos_failed(void)
 {
+#ifdef RTC_PWRM_BASE_ADDRESS
+	return rtc_failed(read32p(RTC_PWRM_BASE_ADDRESS + GEN_PMCON_B));
+#else
 	return rtc_failed(read32(pmc_mmio_regs() + GEN_PMCON_B));
+#endif
 }
 
 static inline int deep_s3_enabled(void)
@@ -250,6 +254,10 @@ void soc_fill_power_state(struct chipset_power_state *ps)
 	pmc = pmc_mmio_regs();
 	ps->gen_pmcon_a = read32(pmc + GEN_PMCON_A);
 	ps->gen_pmcon_b = read32(pmc + GEN_PMCON_B);
+#ifdef RTC_PWRM_BASE_ADDRESS
+	/* The RTC's power status lives in the PMC of the die that holds the RTC. */
+	ps->gen_pmcon_b = read32p(RTC_PWRM_BASE_ADDRESS + GEN_PMCON_B);
+#endif
 	ps->gblrst_cause[0] = read32(pmc + GBLRST_CAUSE0);
 	ps->gblrst_cause[1] = read32(pmc + GBLRST_CAUSE1);
 	ps->hpr_cause0 = read32(pmc + HPR_CAUSE0);
