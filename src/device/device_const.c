@@ -386,8 +386,17 @@ bool is_dev_enabled(const struct device *dev)
 	return dev->enabled;
 }
 
+/*
+ * The device for a devfn of the SoC. pcidev_path_on_root() only searches the first domain; a SoC
+ * whose devices sit in more than one domain overrides this to search the right one.
+ */
+__weak DEVTREE_CONST struct device *soc_pcidev_path(pci_devfn_t devfn)
+{
+	return pcidev_path_on_root(devfn);
+}
+
 bool is_devfn_enabled(unsigned int devfn)
 {
-	const struct device *dev = pcidev_path_on_root(devfn);
+	const struct device *dev = soc_pcidev_path(devfn);
 	return is_dev_enabled(dev);
 }

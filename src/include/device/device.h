@@ -202,6 +202,8 @@ void disable_children(struct bus *bus);
 bool dev_is_active_bridge(const struct device *dev);
 bool is_dev_enabled(const struct device *const dev);
 bool is_devfn_enabled(unsigned int devfn);
+/* PCI device by devfn, for SoCs whose devices sit in more than one domain; see device_const.c */
+DEVTREE_CONST struct device *soc_pcidev_path(pci_devfn_t devfn);
 bool is_cpu(const struct device *cpu);
 bool is_enabled_cpu(const struct device *cpu);
 bool is_pci(const struct device *pci);
