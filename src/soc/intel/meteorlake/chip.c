@@ -70,6 +70,16 @@ const char *soc_acpi_name(const struct device *dev)
 		return NULL;
 	}
 
+	/*
+	 * The names below are for devices on a domain's root bus. acpi_device_name() asks the
+	 * domain for any device under it, so without this check a device behind a bridge is
+	 * named by its devfn too: a dGPU and its bridges, all at 00.0, became
+	 * \_SB.PCI0.RP09.MCHC.MCHC.MCHC, a scope that does not exist.
+	 */
+	if (!dev->upstream || !dev->upstream->dev ||
+	    dev->upstream->dev->path.type != DEVICE_PATH_DOMAIN)
+		return NULL;
+
 	switch (dev->path.pci.devfn) {
 	case PCI_DEVFN_ROOT:		return "MCHC";
 	case PCI_DEVFN_IGD:		return "GFX0";
