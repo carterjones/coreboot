@@ -19,6 +19,19 @@
 #define CRASHLOG_RE_ARM_STATUS_MASK	BIT(25)
 #define CRASHLOG_CONSUMED_MASK		BIT(31)
 
+/*
+ * The SoC PMC's crash log SRAM. Arrow Lake-S has it at 00:14.0 on the SoC die, where the
+ * Meteor Lake layout has it at 00:14.2; vendor firmware for Arrow Lake-S picks 14.0 or 14.2 by
+ * the SoC family the same way.
+ */
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+#define PMC_SRAM_DEVFN	PCI_DEVFN_SOC_SRAM
+#define PMC_SRAM_DEV	PCI_DEV_SOC_SRAM
+#else
+#define PMC_SRAM_DEVFN	PCI_DEVFN_SRAM
+#define PMC_SRAM_DEV	PCI_DEV_SRAM
+#endif
+
 /* global crashLog info */
 static bool m_pmc_crashLog_support;
 static bool m_pmc_crashLog_present;
@@ -221,13 +234,13 @@ bool pmc_cl_discovery(void)
 	m_pmc_crashLog_support = true;
 
 	/* Program BAR 0 and enable command register memory space decoding */
-	bar_addr = get_sram_bar(PCI_DEVFN_SRAM);
+	bar_addr = get_sram_bar(PMC_SRAM_DEVFN);
 	if (bar_addr == 0) {
 		printk(BIOS_ERR, "PCH SRAM not available, crashlog feature can't be enabled.\n");
 		return false;
 	}
 
-	configure_sram(PCI_DEV_SRAM, bar_addr);
+	configure_sram(PMC_SRAM_DEV, bar_addr);
 
 	desc_table_addr = bar_addr + discovery_buf.conv_bits64.desc_tabl_offset;
 	m_pmc_crashLog_size = pmc_cl_gen_descriptor_table(desc_table_addr,
@@ -258,12 +271,12 @@ uintptr_t cl_get_cpu_bar_addr(void)
 
 uintptr_t cl_get_cpu_tmp_bar(void)
 {
-	return get_sram_bar(PCI_DEVFN_SRAM);
+	return get_sram_bar(PMC_SRAM_DEVFN);
 }
 
 bool  cl_pmc_sram_has_mmio_access(void)
 {
-	if (pci_read_config16(PCI_DEV_SRAM, PCI_VENDOR_ID) == 0xFFFF) {
+	if (pci_read_config16(PMC_SRAM_DEV, PCI_VENDOR_ID) == 0xFFFF) {
 		printk(BIOS_ERR, "PMC SSRAM PCI device disabled. Can be enabled in device tree.\n");
 		return false;
 	}

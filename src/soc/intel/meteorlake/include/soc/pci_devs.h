@@ -151,6 +151,11 @@ DEVTREE_CONST struct device *soc_pch_pcidev(pci_devfn_t devfn, const char *func)
 #define  PCI_DEV_USBOTG		_PCH_DEV(XHCI, 1)
 #define  PCI_DEV_SRAM		_PCH_DEV(XHCI, 2)
 #define  PCI_DEV_CNVI_WIFI	_PCH_DEV(XHCI, 3)
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+/* Arrow Lake-S: the SoC PMC's shared SRAM, on the SoC die (the chipset's xHCI is 80:14.0) */
+#define  PCI_DEVFN_SOC_SRAM	_PCI_DEVFN(XHCI, 0)
+#define  PCI_DEV_SOC_SRAM	_PCI_DEV(XHCI, 0)
+#endif
 
 #define PCI_DEV_SLOT_SIO0	0x15
 #define  PCI_DEVFN_I2C0		_PCI_DEVFN(SIO0, 0)
