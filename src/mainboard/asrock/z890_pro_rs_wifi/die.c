@@ -2,6 +2,7 @@
 
 #include <console/console.h>
 #include <delay.h>
+#include <pc80/i8254.h>
 
 #include "pmic.h"
 
@@ -9,9 +10,10 @@
 #define POSTCODE_BOARD_DIE	0x5f
 
 /*
- * A failure is reported on the UART1 POST header, which carries the bytes written to port 0x80.
- * The code is repeated so that a capture started late still sees it. A die_with_post_code()
- * caller's own code comes just before the first 0x5f.
+ * A failure is reported on the UART1 POST header, which carries the bytes written to port 0x80,
+ * and as a repeating group of four beeps on the case speaker header. The code is repeated so that
+ * a capture started late still sees it. A die_with_post_code() caller's own code comes just before
+ * the first 0x5f.
  */
 void die_notify(void)
 {
@@ -27,6 +29,10 @@ void die_notify(void)
 
 	while (1) {
 		post_code(POSTCODE_BOARD_DIE);
+		for (int i = 0; i < 4; i++) {
+			beep(800, 300);
+			mdelay(200);
+		}
 		mdelay(1000);
 	}
 }

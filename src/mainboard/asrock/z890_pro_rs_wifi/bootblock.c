@@ -145,4 +145,7 @@ void bootblock_mainboard_init(void)
 
 	/* The chipset's pads are reached through its P2SB, which must be visible here. */
 	gpio_configure_pads(pch_gpio_table, pch_gpio_table_size);
+
+	if (CONFIG(BEEP_ON_BOOT))
+		beep(1500, 100);
 }

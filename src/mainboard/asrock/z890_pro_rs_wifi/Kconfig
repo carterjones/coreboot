@@ -41,4 +41,13 @@ config USE_PM_ACPI_TIMER
 config USE_LEGACY_8254_TIMER
 	default y
 
+config BEEP_ON_BOOT
+	bool "Beep at the bootblock and before the payload"
+	default y
+	help
+	  The board has no serial console (its UART1 header only carries POST codes), so these
+	  beeps on the case speaker header show how far a first boot got. One short beep means the
+	  bootblock ran, two short beeps in a row mean ramstage reached the payload, and four
+	  beeps in a group are a failure (die).
+
 endif

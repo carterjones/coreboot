@@ -5,7 +5,9 @@
 #include <cbmem.h>
 #include <commonlib/memory_info.h>
 #include <console/console.h>
+#include <delay.h>
 #include <device/device.h>
+#include <pc80/i8254.h>
 #include <intelblocks/cse.h>
 #include <soc/ramstage.h>
 #include <types.h>
@@ -38,3 +40,16 @@ void mainboard_silicon_init_params(FSP_S_CONFIG *params)
 	if (CONFIG(Z890_PTT_OFF))
 		cse_enable_ptt(false);
 }
+
+static void mainboard_final(void *unused)
+{
+	if (CONFIG(BEEP_ON_BOOT)) {
+		beep(1500, 100);
+		mdelay(100);
+		beep(1500, 100);
+	}
+}
+
+struct chip_operations mainboard_ops = {
+	.final = mainboard_final,
+};
