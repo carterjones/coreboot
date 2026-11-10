@@ -368,6 +368,14 @@ static void fill_fsps_cpu_params(FSP_S_CONFIG *s_cfg,
 	 */
 	if (CONFIG(USE_FSP_FEATURE_PROGRAM_ON_APS))
 		fill_fsps_microcode_params(s_cfg, config);
+
+	/*
+	 * FSP-S's CPU feature programming switches every CPU to x2APIC when X2ApicEnable is set
+	 * (the default) and VT-d is on. With XAPIC_ONLY coreboot cannot follow (enable_lapic()
+	 * dies with "Switching from X2APIC to XAPIC mode is not implemented"), and a payload
+	 * kernel without x2APIC support disables the APIC.
+	 */
+	s_cfg->X2ApicEnable = !CONFIG(XAPIC_ONLY);
 }
 
 
