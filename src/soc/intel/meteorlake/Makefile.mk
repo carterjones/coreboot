@@ -13,7 +13,11 @@ all-y += gpio.c
 endif
 
 bootblock-y += bootblock/bootblock.c
+ifeq ($(CONFIG_SOC_INTEL_ARROWLAKE_S),y)
+bootblock-y += bootblock/pch_early_arl_s.c
+else
 bootblock-y += bootblock/ioe_die.c
+endif
 bootblock-y += bootblock/report_platform.c
 bootblock-y += bootblock/soc_die.c
 bootblock-y += soc_info.c

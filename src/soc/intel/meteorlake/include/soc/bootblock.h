@@ -6,6 +6,7 @@
 /* Bootblock pre console init programming */
 void bootblock_soc_die_early_init(void);
 void bootblock_ioe_die_early_init(void);
+void bootblock_pch_early_init(void);
 
 /* Bootblock post console init programming */
 void bootblock_soc_die_init(void);
