@@ -46,6 +46,23 @@ chip soc/intel/meteorlake
 		device ref system_agent on end
 		device ref igpu on end
 
+		# The DPTF root device and the CPU participant. The vendor firmware defines more
+		# participants, but only the CPU and its trip points work: its fan participant's
+		# status method fails on the running board, because the fans are the EC's.
+		device ref dtt on
+			chip drivers/intel/dptf
+				# The vendor trips are all at or above the 105 degree Tj max, so they are
+				# a last resort: critical, hot and passive at 110 degrees.
+				register "policies.passive" = "{
+					[0] = DPTF_PASSIVE(CPU, CPU, 110, 10000),
+				}"
+				register "policies.critical" = "{
+					[0] = DPTF_CRITICAL(CPU, 110, SHUTDOWN),
+				}"
+				device generic 0 alias dptf_policy on end
+			end
+		end
+
 		# Crash log: the SoC PMC's records are read through this SRAM's BAR.
 		device ref soc_shared_sram on end
 
