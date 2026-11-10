@@ -160,6 +160,25 @@ static void pmics_setup(void)
 		pmic_setup(0x48 | (spd_addr[i] & 7));
 }
 
+#define FSP_CLK_NOTUSED			0xFF
+#define FSP_CLK_FREE_RUNNING		0x80
+
+/*
+ * Which clock source and CLKREQ# pin serve which root port is not known for this board, and
+ * the vendor firmware's own tables were not found. A source marked free running is always on,
+ * so every PCIe device gets its reference clock whatever the wiring is, with no CLKREQ#
+ * dependence. That costs the clock gating a CLKREQ# based power saving would give, which the
+ * other Intel desktop boards in coreboot and Heads also go without.
+ */
+static void run_all_pcie_clocks_free(FSP_M_CONFIG *m_cfg)
+{
+	memset(m_cfg->PcieClkSrcUsage, FSP_CLK_FREE_RUNNING, sizeof(m_cfg->PcieClkSrcUsage));
+	memset(m_cfg->PchPcieClkSrcUsage, FSP_CLK_FREE_RUNNING,
+	       sizeof(m_cfg->PchPcieClkSrcUsage));
+	memset(m_cfg->PcieClkSrcClkReq, FSP_CLK_NOTUSED, sizeof(m_cfg->PcieClkSrcClkReq));
+	memset(m_cfg->PchPcieClkSrcClkReq, FSP_CLK_NOTUSED, sizeof(m_cfg->PchPcieClkSrcClkReq));
+}
+
 void mainboard_memory_init_params(FSPM_UPD *memupd)
 {
 	/* DRAM ends at 2 GiB on the vendor firmware, with the PCI hole above it. */
@@ -168,6 +187,8 @@ void mainboard_memory_init_params(FSPM_UPD *memupd)
 	memcfg_init(memupd, &ddr5_mem_config, &dimm_module_spd_info, false);
 
 	pmics_setup();
+
+	run_all_pcie_clocks_free(&memupd->FspmConfig);
 
 	/*
 	 * The iGPU is the primary display, for the payload's framebuffer on the board's HDMI.
