@@ -27,9 +27,16 @@
 #if CONFIG(SOC_INTEL_ARROWLAKE_S)
 #define PMC_SRAM_DEVFN	PCI_DEVFN_SOC_SRAM
 #define PMC_SRAM_DEV	PCI_DEV_SOC_SRAM
+/*
+ * Arrow Lake-S's PMC still describes records in a second SRAM at 00:13.3 (the IOE SRAM's BDF,
+ * named by the descriptor table's metadata region), but there is no such device to read them
+ * from, so those records are left out.
+ */
+#define HAVE_IOE_SRAM	false
 #else
 #define PMC_SRAM_DEVFN	PCI_DEVFN_SRAM
 #define PMC_SRAM_DEV	PCI_DEV_SRAM
+#define HAVE_IOE_SRAM	true
 #endif
 
 /* global crashLog info */
@@ -88,7 +95,7 @@ static void configure_sram(const struct device *sram_dev, uintptr_t base_addr)
 void cl_get_pmc_sram_data(cl_node_t *head)
 {
 	uintptr_t pmc_sram_base = cl_get_cpu_tmp_bar();
-	uintptr_t ioe_sram_base = get_sram_bar(PCI_DEVFN_IOE_SRAM);
+	uintptr_t ioe_sram_base = HAVE_IOE_SRAM ? get_sram_bar(PCI_DEVFN_IOE_SRAM) : 0;
 	u32 pmc_crashLog_size = cl_get_pmc_record_size();
 	cl_node_t *cl_cur = head;
 
@@ -102,17 +109,19 @@ void cl_get_pmc_sram_data(cl_node_t *head)
 		return;
 	}
 
-	if (!ioe_sram_base) {
-		printk(BIOS_ERR, "IOE SRAM base not valid\n");
-		return;
-	}
+	if (HAVE_IOE_SRAM) {
+		if (!ioe_sram_base) {
+			printk(BIOS_ERR, "IOE SRAM base not valid\n");
+			return;
+		}
 
-	configure_sram(PCI_DEV_IOE_SRAM, ioe_sram_base);
+		configure_sram(PCI_DEV_IOE_SRAM, ioe_sram_base);
+	}
 
 	if (!cl_pmc_sram_has_mmio_access())
 		return;
 
-	if (!cl_ioe_sram_has_mmio_access())
+	if (HAVE_IOE_SRAM && !cl_ioe_sram_has_mmio_access())
 		return;
 
 	printk(BIOS_DEBUG, "PMC crashLog size : 0x%x\n", pmc_crashLog_size);
@@ -150,13 +159,22 @@ void cl_get_pmc_sram_data(cl_node_t *head)
 			continue;
 		} else {
 			if (descriptor_table.regions[i].bits.assign_tag ==
-					CRASHLOG_DESCRIPTOR_TABLE_TAG_SOC)
+					CRASHLOG_DESCRIPTOR_TABLE_TAG_SOC) {
 				sram_base = pmc_sram_base;
-			else if (descriptor_table.regions[i].bits.assign_tag ==
-					CRASHLOG_DESCRIPTOR_TABLE_TAG_IOE)
+			} else if (descriptor_table.regions[i].bits.assign_tag ==
+					CRASHLOG_DESCRIPTOR_TABLE_TAG_IOE) {
+				if (!HAVE_IOE_SRAM) {
+					pmc_crashLog_size -= descriptor_table.regions[i].bits.size *
+								sizeof(u32);
+					printk(BIOS_DEBUG,
+					       "No IOE SRAM. PMC crashlog size adjusted to: 0x%x\n",
+					       pmc_crashLog_size);
+					continue;
+				}
 				sram_base = ioe_sram_base;
-			else
+			} else {
 				continue;
+			}
 
 			cl_node_t *cl_node = malloc_cl_node(descriptor_table.regions[i].bits.size);
 
