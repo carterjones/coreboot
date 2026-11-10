@@ -5,6 +5,7 @@
 #include <console/console.h>
 #include <cpu/cpu.h>
 #include <cpu/intel/common/common.h>
+#include <cpu/intel/msr.h>
 #include <cpu/intel/turbo.h>
 #include <cpu/x86/msr.h>
 #include <cpu/x86/mtrr.h>
@@ -487,6 +488,14 @@ void init_core_prmrr(void)
 void set_tme_core_activate(void)
 {
 	msr_t msr = { .lo = 0, .hi = 0 };
+
+	/*
+	 * MK_TME_CORE_ACTIVATE exists only with multi-key TME: "Accesses to this MSR will #GP if
+	 * Intel TME-MK is not supported" (Intel 336907-007, 4.2.3). IA32_TME_CAPABILITY
+	 * MK_TME_MAX_KEYID_BITS (bits 35:32) is zero then (Table 4-1), as on Arrow Lake-S.
+	 */
+	if (!(rdmsr(MSR_TME_CAPABILITY).hi & TME_CAPABILITY_HI_MAX_KEYID_BITS_MASK))
+		return;
 
 	wrmsr(MSR_CORE_MKTME_ACTIVATION, msr);
 }
