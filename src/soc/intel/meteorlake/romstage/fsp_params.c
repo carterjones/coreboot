@@ -176,6 +176,17 @@ static void fill_fspm_mrc_params(FSP_M_CONFIG *m_cfg,
 		}
 	}
 
+	if (CONFIG(SOC_INTEL_ARROWLAKE_S)) {
+		/*
+		 * The FSP lays out its reserved memory and the bootloader TOLUM range from the top
+		 * of a region this size, and it drops the TOLUM range (no FSP_BOOTLOADER_TOLUM_HOB,
+		 * so cbmem_top() dies) unless its reserved size plus BootLoaderTolumSize fits in it.
+		 * The default of 4 MiB is smaller than the reserved memory of the Arrow Lake-S IoT
+		 * FSP (0x560000). 16 MiB leaves room for both.
+		 */
+		m_cfg->PlatformMemorySize = 16 * MiB;
+	}
+
 	m_cfg->RMT = config->rmt;
 	m_cfg->RMC = 0;
 	m_cfg->MarginLimitCheck = 0;
