@@ -65,7 +65,19 @@
 #define EARLY_I2C_BASE_ADDRESS	0xfe020000
 #define EARLY_I2C_BASE(x)	(EARLY_I2C_BASE_ADDRESS + (0x2000 * (x)))
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+/*
+ * The SPI controller that holds the BIOS flash is the chipset's (PCH_DEV_SPI, bus 0x80), so its
+ * early BAR must lie in the chipset's memory window (0xb0000000-0xbfffffff, set up by
+ * bootblock_pch_early_init()). At 0xfe010000 the BFPREG read returns all ones, the BIOS region
+ * looks 4 KiB long, and fast_spi_cache_bios_region() caches only the top 4 KiB of the flash, so
+ * the rest of the bootblock runs uncached. 0xbe010000 is clear of FSP-T's fixed chipset BARs
+ * (0xbe800000, 0xbed00000, 0xbed3c000) and of the allocator's 0xb8000000-0xbdffffff.
+ */
+#define SPI_BASE_ADDRESS	0xbe010000
+#else
 #define SPI_BASE_ADDRESS	0xfe010000
+#endif
 
 #define REG_BASE_ADDRESS	0xd0000000
 #define REG_BASE_SIZE		(256 * MiB)
