@@ -53,4 +53,9 @@ cpu_microcode_bins += \
 	3rdparty/intel-microcode/intel-ucode/06-c6-02
 endif
 
+ifeq ($(CONFIG_SOC_INTEL_ARROWLAKE_S),y)
+cpu_microcode_bins += \
+	3rdparty/intel-microcode/intel-ucode/06-c6-02
+endif
+
 endif
