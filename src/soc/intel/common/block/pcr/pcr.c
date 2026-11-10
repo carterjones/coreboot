@@ -9,6 +9,7 @@
 #include <device/pci_def.h>
 #include <device/pci_ops.h>
 #include <device/pci_type.h>
+#include <intelblocks/p2sblib.h>
 #include <intelblocks/pcr.h>
 #include <soc/pci_devs.h>
 #include <timer.h>
@@ -55,6 +56,65 @@
 #define P2SB_CR_SBI_EXT_ADDR	0xdc
 #endif
 
+/*
+ * Ports behind another P2SB are reached through the sideband interface in that P2SB's PCI
+ * configuration space. The interface moves whole dwords, so narrower accesses are done on the
+ * dword that contains them.
+ */
+#if CONFIG(SOC_INTEL_COMMON_BLOCK_PCR_VIRTUAL_PIDS)
+
+static bool pcr_sbi_target(uint8_t pid, pci_devfn_t *dev, uint8_t *real_pid)
+{
+	return soc_pcr_resolve_pid(pid, dev, real_pid);
+}
+
+static uint32_t pcr_sbi_read(pci_devfn_t dev, uint8_t pid, uint16_t offset, size_t size)
+{
+	const uint32_t dword = p2sb_dev_sbi_read(dev, pid, ALIGN_DOWN(offset, sizeof(uint32_t)));
+	const unsigned int shift = 8 * (offset & 3);
+
+	if (size == sizeof(uint32_t))
+		return dword;
+	return (dword >> shift) & ((1U << (8 * size)) - 1);
+}
+
+static void pcr_sbi_write(pci_devfn_t dev, uint8_t pid, uint16_t offset, size_t size,
+			  uint32_t data)
+{
+	const uint16_t base = ALIGN_DOWN(offset, sizeof(uint32_t));
+	const unsigned int shift = 8 * (offset & 3);
+	uint32_t mask, dword;
+
+	if (size == sizeof(uint32_t)) {
+		p2sb_dev_sbi_write(dev, pid, base, data);
+		return;
+	}
+
+	mask = ((1U << (8 * size)) - 1) << shift;
+	dword = p2sb_dev_sbi_read(dev, pid, base);
+	dword = (dword & ~mask) | ((data << shift) & mask);
+	p2sb_dev_sbi_write(dev, pid, base, dword);
+}
+
+#else
+
+static bool pcr_sbi_target(uint8_t pid, pci_devfn_t *dev, uint8_t *real_pid)
+{
+	return false;
+}
+
+static uint32_t pcr_sbi_read(pci_devfn_t dev, uint8_t pid, uint16_t offset, size_t size)
+{
+	return 0;
+}
+
+static void pcr_sbi_write(pci_devfn_t dev, uint8_t pid, uint16_t offset, size_t size,
+			  uint32_t data)
+{
+}
+
+#endif
+
 static inline bool pcr_is_pid_supported(uint8_t pid, uint16_t offset)
 {
 	if (pid == PID_NOT_SUPPORTED) {
@@ -82,7 +142,12 @@ static void *__pcr_reg_address(uint8_t pid, uint16_t offset)
 
 void *pcr_reg_address(uint8_t pid, uint16_t offset)
 {
+	pci_devfn_t sbi_dev;
+	uint8_t sbi_pid;
+
 	assert(pid != PID_NOT_SUPPORTED);
+	/* A port behind another P2SB has no memory mapped registers. */
+	assert(!pcr_sbi_target(pid, &sbi_dev, &sbi_pid));
 
 	if (CONFIG(PCR_COMMON_IOSF_1_0))
 		assert(IS_ALIGNED(offset, sizeof(uint32_t)));
@@ -107,8 +172,14 @@ static inline void check_pcr_offset_align(uint16_t offset, size_t size)
 
 uint32_t pcr_read32(uint8_t pid, uint16_t offset)
 {
+	pci_devfn_t sbi_dev;
+	uint8_t sbi_pid;
+
 	if (!pcr_is_pid_supported(pid, offset))
 		return 0;
+
+	if (pcr_sbi_target(pid, &sbi_dev, &sbi_pid))
+		return pcr_sbi_read(sbi_dev, sbi_pid, offset, 4);
 
 	/* Ensure the PCR offset is correctly aligned. */
 	assert(IS_ALIGNED(offset, sizeof(uint32_t)));
@@ -118,8 +189,14 @@ uint32_t pcr_read32(uint8_t pid, uint16_t offset)
 
 uint16_t pcr_read16(uint8_t pid, uint16_t offset)
 {
+	pci_devfn_t sbi_dev;
+	uint8_t sbi_pid;
+
 	if (!pcr_is_pid_supported(pid, offset))
 		return 0;
+
+	if (pcr_sbi_target(pid, &sbi_dev, &sbi_pid))
+		return pcr_sbi_read(sbi_dev, sbi_pid, offset, 2);
 
 	/* Ensure the PCR offset is correctly aligned. */
 	check_pcr_offset_align(offset, sizeof(uint16_t));
@@ -129,8 +206,14 @@ uint16_t pcr_read16(uint8_t pid, uint16_t offset)
 
 uint8_t pcr_read8(uint8_t pid, uint16_t offset)
 {
+	pci_devfn_t sbi_dev;
+	uint8_t sbi_pid;
+
 	if (!pcr_is_pid_supported(pid, offset))
 		return 0;
+
+	if (pcr_sbi_target(pid, &sbi_dev, &sbi_pid))
+		return pcr_sbi_read(sbi_dev, sbi_pid, offset, 1);
 
 	/* Ensure the PCR offset is correctly aligned. */
 	check_pcr_offset_align(offset, sizeof(uint8_t));
@@ -151,8 +234,16 @@ static inline void write_completion(uint8_t pid, uint16_t offset)
 
 void pcr_write32(uint8_t pid, uint16_t offset, uint32_t indata)
 {
+	pci_devfn_t sbi_dev;
+	uint8_t sbi_pid;
+
 	if (!pcr_is_pid_supported(pid, offset))
 		return;
+
+	if (pcr_sbi_target(pid, &sbi_dev, &sbi_pid)) {
+		pcr_sbi_write(sbi_dev, sbi_pid, offset, 4, indata);
+		return;
+	}
 
 	/* Ensure the PCR offset is correctly aligned. */
 	assert(IS_ALIGNED(offset, sizeof(indata)));
@@ -164,8 +255,16 @@ void pcr_write32(uint8_t pid, uint16_t offset, uint32_t indata)
 
 void pcr_write16(uint8_t pid, uint16_t offset, uint16_t indata)
 {
+	pci_devfn_t sbi_dev;
+	uint8_t sbi_pid;
+
 	if (!pcr_is_pid_supported(pid, offset))
 		return;
+
+	if (pcr_sbi_target(pid, &sbi_dev, &sbi_pid)) {
+		pcr_sbi_write(sbi_dev, sbi_pid, offset, 2, indata);
+		return;
+	}
 
 	/* Ensure the PCR offset is correctly aligned. */
 	check_pcr_offset_align(offset, sizeof(uint16_t));
@@ -177,8 +276,16 @@ void pcr_write16(uint8_t pid, uint16_t offset, uint16_t indata)
 
 void pcr_write8(uint8_t pid, uint16_t offset, uint8_t indata)
 {
+	pci_devfn_t sbi_dev;
+	uint8_t sbi_pid;
+
 	if (!pcr_is_pid_supported(pid, offset))
 		return;
+
+	if (pcr_sbi_target(pid, &sbi_dev, &sbi_pid)) {
+		pcr_sbi_write(sbi_dev, sbi_pid, offset, 1, indata);
+		return;
+	}
 
 	/* Ensure the PCR offset is correctly aligned. */
 	check_pcr_offset_align(offset, sizeof(uint8_t));

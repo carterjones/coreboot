@@ -69,6 +69,15 @@ struct pcr_sbi_msg {
 int pcr_execute_sideband_msg(pci_devfn_t dev, struct pcr_sbi_msg *msg, uint32_t *data,
 		uint8_t *response);
 
+#if CONFIG(SOC_INTEL_COMMON_BLOCK_PCR_VIRTUAL_PIDS)
+/*
+ * SoC hook. If pid is a virtual port id for a port behind another P2SB, return true and
+ * set the P2SB device and the port id to use in its sideband interface. Such ports are
+ * not memory mapped and have no pcr_reg_address().
+ */
+bool soc_pcr_resolve_pid(uint8_t pid, pci_devfn_t *dev, uint8_t *real_pid);
+#endif
+
 /* Get the starting address of the port's registers. */
 void *pcr_reg_address(uint8_t pid, uint16_t offset);
 #endif /* if !defined(__ACPI__) */

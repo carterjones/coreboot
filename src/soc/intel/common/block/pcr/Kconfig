@@ -5,6 +5,16 @@ config SOC_INTEL_COMMON_BLOCK_PCR
 	help
 	  Intel Processor common Private configuration registers (PCR)
 
+config SOC_INTEL_COMMON_BLOCK_PCR_VIRTUAL_PIDS
+	bool
+	depends on SOC_INTEL_COMMON_BLOCK_PCR
+	help
+	  Let the SoC give a port id that stands for a port on another
+	  P2SB, such as the one on a separate chipset die. The SoC provides
+	  soc_pcr_resolve_pid(), and accesses to such a port go through the
+	  sideband interface registers in that P2SB's PCI configuration space
+	  instead of through the memory mapped PCR window.
+
 config PCR_COMMON_IOSF_1_0
 	bool
 	depends on SOC_INTEL_COMMON_BLOCK_PCR
