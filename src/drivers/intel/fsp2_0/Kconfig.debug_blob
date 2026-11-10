@@ -40,6 +40,15 @@ config DISPLAY_FSP_VERSION_INFO
 	help
 	  Select this option to display Firmware version information.
 
+config FSP_M_IGNORE_MRC_CACHE
+	bool "Do not pass saved memory training data to FSP-M"
+	depends on CACHE_MRC_SETTINGS
+	default n
+	help
+	  Debug option: FSP-M always gets NvsBufferPtr = 0 and BOOT_WITH_FULL_CONFIGURATION, so
+	  memory is trained on every boot. Training data is still saved. Use it to tell a failure
+	  in FSP-M's fast boot path from one in full training.
+
 config DISPLAY_FSP_VERSION_INFO_2
 	bool
 	default n

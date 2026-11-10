@@ -104,6 +104,11 @@ static void fsp_fill_mrc_cache(FSPM_ARCHx_UPD *arch_upd, uint32_t version)
 	if (!CONFIG(CACHE_MRC_SETTINGS))
 		return;
 
+	if (CONFIG(FSP_M_IGNORE_MRC_CACHE)) {
+		printk(BIOS_WARNING, "MRC cache ignored (FSP_M_IGNORE_MRC_CACHE), full training\n");
+		return;
+	}
+
 	/* Assume boot device is memory mapped. */
 	assert(CONFIG(BOOT_DEVICE_MEMORY_MAPPED));
 
