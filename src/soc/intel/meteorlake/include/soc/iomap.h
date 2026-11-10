@@ -31,7 +31,16 @@
 
 #define GPIO_BASE_SIZE		0x10000
 
+#if CONFIG(SOC_INTEL_ARROWLAKE_S)
+/*
+ * The CSE's HECI functions are the chipset's (80:16.x), so their early BARs must lie in the
+ * chipset memory window (0xb0000000-0xbfffffff), like SPI_BASE_ADDRESS; coreboot may map HECI1 to
+ * HECI4 at 4 KiB steps from here.
+ */
+#define HECI1_BASE_ADDRESS	0xbe020000
+#else
 #define HECI1_BASE_ADDRESS	0xfeda2000
+#endif
 
 #define VTD_BASE_ADDRESS	0xfc800000
 #define GFXVT_BASE_ADDRESS	0xfc800000
