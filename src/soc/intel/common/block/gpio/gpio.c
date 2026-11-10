@@ -897,9 +897,17 @@ void gpio_route_gpe(uint8_t gpe0b, uint8_t gpe0c, uint8_t gpe0d)
 		printk(BIOS_DEBUG, "misccfg_mask:%x misccfg_value:%x\n",
 			misccfg_mask, misccfg_value);
 	comm = soc_gpio_get_community(&gpio_communities);
-	for (i = 0; i < gpio_communities; i++, comm++)
+	for (i = 0; i < gpio_communities; i++, comm++) {
+		if (!soc_gpio_community_has_pmc_gpe(comm))
+			continue;
 		pcr_rmw32(comm->port, GPIO_MISCCFG,
 				misccfg_mask, misccfg_value);
+	}
+}
+
+bool __weak soc_gpio_community_has_pmc_gpe(const struct pad_community *comm)
+{
+	return true;
 }
 
 const char *gpio_acpi_path(gpio_t gpio_num)

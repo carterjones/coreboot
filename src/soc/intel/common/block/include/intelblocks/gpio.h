@@ -280,6 +280,13 @@ const struct gpio_lock_config *soc_gpio_lock_config(size_t *num);
 const struct pmc_to_gpio_route *soc_pmc_gpio_routes(size_t *num);
 
 /*
+ * Tell gpio_route_gpe() whether a community's GPIO_MISCCFG takes the SoC's PMC group numbers.
+ * A SoC with a second die whose groups are numbered separately returns false for its
+ * communities. The default is true.
+ */
+bool soc_gpio_community_has_pmc_gpe(const struct pad_community *comm);
+
+/*
  * Set the GPIO groups for the GPE blocks. The values from PMC register GPE_CFG
  * are passed which is then mapped to proper groups for MISCCFG. This basically
  * sets the MISCCFG register bits:
