@@ -175,6 +175,8 @@ config SOC_INTEL_METEORLAKE_TCSS_USB4_SUPPORT
 
 config MAX_CPUS
 	int
+	# Arrow Lake-S has up to 8 P-cores and 16 E-cores and no Hyper-Threading.
+	default 24 if SOC_INTEL_ARROWLAKE_S
 	default 22
 
 config DCACHE_RAM_BASE
